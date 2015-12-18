@@ -3,7 +3,7 @@
 
 int main(void)
 {
-    int ch, floor = 0;
+    int ch, floor = 0, been_basement = 0;
     while ((ch = getchar()) != EOF)
     {
         switch (ch)
@@ -13,6 +13,12 @@ int main(void)
         default:
             printf("Warning: unexpected character in input: %c\n", ch);
             break;
+        }
+
+        if (!been_basement && floor == -1)
+        {
+            printf("Note: first entered basement at step %ld\n", ftell(stdin));
+            been_basement = 1;
         }
     }
 
