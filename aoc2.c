@@ -24,6 +24,29 @@ unsigned paper_area(const struct box* b)
     return 2 * (side1 + side2 + side3) + extra;
 }
 
+unsigned ribbon_len(const struct box* b)
+{
+    unsigned factor;
+    if (b->l < b->w)
+    {
+        factor = b->l;
+        if (b->w < b->h)
+            factor += b->w;
+        else 
+            factor += b->h;
+    }
+    else
+    {
+        factor = b->w;
+        if (b->l < b->h)
+            factor += b->l;
+        else
+            factor += b->h;
+    }
+
+    return 2 * factor + b->l * b->w * b->h;
+}
+
 int parse_box(char* str, struct box* b) /* NOT reentrant! */
 {
     char* dimstr = strtok(str, "x"), * end;
@@ -48,7 +71,7 @@ int parse_box(char* str, struct box* b) /* NOT reentrant! */
 int main(void)
 {
     char line[10];
-    unsigned total_area = 0;
+    unsigned paper = 0, ribbon = 0;
     struct box b;
 
     while(fgets(line, 10, stdin))
@@ -59,7 +82,8 @@ int main(void)
             return EXIT_FAILURE;
         }
 
-        total_area += paper_area(&b);
+        paper += paper_area(&b);
+        ribbon += ribbon_len(&b);
     }
 
     if (ferror(stdin))
@@ -68,7 +92,8 @@ int main(void)
         return EXIT_FAILURE;
     }
 
-    printf("Total area of paper required: %u\n", total_area);
+    printf("Total area of paper required: %u ft\n", paper);
+    printf("Total length of ribbon required: %u ft\n", ribbon);
 
     return EXIT_SUCCESS;
 }
