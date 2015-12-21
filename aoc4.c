@@ -9,6 +9,8 @@
 
 #define snprintf sprintf_s /* Visual C++ and its very partial implementation of C99... */
 
+typedef int (*hash_validator_t)(const uint8_t*);
+
 HCRYPTPROV crypt;
 
 size_t md5hash(char* data, size_t size, uint8_t* hash, size_t hashsiz)
@@ -29,12 +31,17 @@ size_t md5hash(char* data, size_t size, uint8_t* hash, size_t hashsiz)
     return hashsiz;
 }
 
-int validate_hash(const uint8_t* hash)
+int validate_hash5(const uint8_t* hash)
 {
     return hash[0] == 0 && hash[1] == 0 && (hash[2] & 0xf0) == 0;
 }
 
-int try_value(const char* key, size_t keylen, unsigned value)
+int validate_hash6(const uint8_t* hash)
+{
+    return hash[0] == 0 && hash[1] == 0 && hash[2] == 0;
+}
+
+int try_value(const char* key, size_t keylen, unsigned value, hash_validator_t validate)
 {
     char data[32];
     char* suffix = data + keylen;
@@ -48,10 +55,10 @@ int try_value(const char* key, size_t keylen, unsigned value)
     if(!md5hash(data, datalen, hash, HASH_SIZE))
         exit(EXIT_FAILURE);
 
-    return validate_hash(hash);
+    return validate(hash);
 }
 
-unsigned mine(const char* key)
+unsigned mine(const char* key, hash_validator_t validate)
 {
     int found;
     size_t keylen = strlen(key);
@@ -59,7 +66,7 @@ unsigned mine(const char* key)
 
     do
     {
-        found = try_value(key, keylen, value);
+        found = try_value(key, keylen, value, validate);
     } while (!found && ++value != 0);
 
     return value;
@@ -73,11 +80,12 @@ int main(void)
     if(!CryptAcquireContext(&crypt, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
         return EXIT_FAILURE;
 
-    value = mine(key);
+    value = mine(key, validate_hash5);
+    printf("Answer for part 1 is %u\n", value);
+    value = mine(key, validate_hash6);
+    printf("Answer for part 2 is %u\n", value);
 
     CryptReleaseContext(crypt, 0);
-
-    printf("Answer is %u\n", value);
 
     return EXIT_SUCCESS;
 }
