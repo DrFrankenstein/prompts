@@ -10,6 +10,7 @@ using std::make_pair;
 using std::cin;
 using std::cout;
 using std::endl;
+using std::swap;
 
 using boost::hash;
 
@@ -19,8 +20,8 @@ typedef unordered_map<coordinates, int, hash<coordinates> > house_map;
 int main()
 {
     house_map map;
-    coordinates coords (0, 0);
-    map.insert(make_pair(coords, 1));   // already visited (0, 0) at the start
+    coordinates coords (0, 0), robot_coords (0, 0);
+    map.insert(make_pair(coords, 2));   // already visited (0, 0) at the start
 
     char c;
     while (cin >> c)
@@ -35,6 +36,8 @@ int main()
         }
 
         ++map[coords];
+
+        swap(coords, robot_coords);
     }
 
     cout << map.size() << " houses got at least one present from Santa." << endl;
