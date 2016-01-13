@@ -1,5 +1,3 @@
-#pragma warning(disable:4820 4514 4710 4350 4706)
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
