@@ -4,30 +4,21 @@
 
 char lights[1000][1000] = {0};
 
-enum operation { UNKNOWN, TURN_ON, TURN_OFF, TOGGLE };
+const signed char UNKNOWN = 0;
+const signed char TURN_ON = 1;
+const signed char TURN_OFF = -1;
+const signed char TOGGLE = 2;
+
 struct rect { size_t x1, y1, x2, y2; };
 
-void perform_op(enum operation opcode, const struct rect* r)
+void perform_op(signed char opcode, const struct rect* r)
 {
     size_t x, y;
-    char val;
 
-    switch (opcode)
-    {   /* putting the switch outside of the tight loop for perf */
-    case TURN_ON:
-    case TURN_OFF:
-        val = opcode == TURN_ON;
-        for (y = r->y1; y <= r->y2; ++y)
-            for (x = r->x1; x <= r->x2; ++x)
-                lights[y][x] = val;
-        break;
-
-    case TOGGLE:
-        for (y = r->y1; y <= r->y2; ++y)
-            for (x = r->x1; x <= r->x2; ++x)
-                lights[y][x] = !lights[y][x];
-        break;
-    }
+    for (y = r->y1; y <= r->y2; ++y)
+        for (x = r->x1; x <= r->x2; ++x)
+            if (opcode >= 0 || lights[y][x] != 0)   /* prevent underflow */
+                lights[y][x] += opcode;
 }
 
 void parse_error(const char* message, FILE* stream)
@@ -41,7 +32,7 @@ void parse_error(const char* message, FILE* stream)
     exit(EXIT_FAILURE);
 }
 
-enum operation parse_command(FILE* stream)
+signed char parse_command(FILE* stream)
 {
     char command[8] = {0};
     long off = ftell(stream);
@@ -78,7 +69,7 @@ void parse_coords(FILE* stream, struct rect* r)
 void step(FILE* stream)
 {
     struct rect r;
-    enum operation op = parse_command(stream);
+    signed char op = parse_command(stream);
 
     if (op == UNKNOWN)
         return;
@@ -95,17 +86,16 @@ void exec(FILE* stream)
     return;
 }
 
-long count_lights(void)
+long measure_brightness(void)
 {
-    long count = 0;
+    long total = 0;
     size_t x, y;
 
     for (x = 0; x < 1000; ++x)
         for (y = 0; y < 1000; ++y)
-            if (lights[x][y])
-                ++count;
+            total += lights[x][y];
 
-    return count;
+    return total;
 }
 
 int main(void)
@@ -118,7 +108,7 @@ int main(void)
         return EXIT_FAILURE;
     }
 
-    printf("%ld lights are on.", count_lights());
+    printf("Total brightness is %ld.", measure_brightness());
 
     return EXIT_SUCCESS;
 }
