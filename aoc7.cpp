@@ -1,5 +1,3 @@
-#pragma warning(disable:4820 4514 4710 4350 4706)
-
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -202,7 +200,7 @@ struct BinaryExpression : Expression
 /************
 PARSING: We use Spirit.Qi, a library that lets you create parsers declaratively
 using operator overloading. We just define our operators and the grammar, and
-it creates our syntax three from that definition and the input file in the call
+it creates our syntax tree from that definition and the input file in the call
 to phrase_match.
 */
 
