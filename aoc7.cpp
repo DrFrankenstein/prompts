@@ -52,7 +52,7 @@ class Wire : public Expression
     string name;
 
     static map<string, shared_ptr<Wire> > wires;  // all the wires by name
-    static map<string, uint16_t> boundValues;     // cache of the values output by a wire after evaulation
+    static map<string, uint16_t> boundValues;     // cache of the values output by wires after evaulation
 
 public:
     Wire() {}
@@ -60,11 +60,13 @@ public:
     Wire(const TExpr& expr, const string& name)
         : expr(make_shared<TExpr>(expr)), name(name)
     {
+        wires.erase(this->name);            
         wires.insert(make_pair(this->name, make_shared<Wire>(*this)));
+        boundValues.clear();
     }
 
     virtual uint16_t operator ()() 
-    {   // try looking the result in the cache...
+    {   // try looking up the result in the cache...
         map<string, uint16_t>::iterator it;
         if ((it = boundValues.find(name)) != boundValues.end())
             return it->second;
@@ -292,6 +294,12 @@ void exec()
     }
 
     // evaluate
+    Wire::get("a")->dump(cout);
+
+    // override 'b' with the value of 'a' and recompute
+    uint16_t a = (*Wire::get("a"))();
+    Wire b (LiteralExpression(a), "b");
+
     Wire::get("a")->dump(cout);
 
     //auto begin = foo.cbegin(), end = foo.cend();
