@@ -15,8 +15,7 @@ const char* skip_escape(const char* source)
     case 'x':
         if (isxdigit(source[2]) && isxdigit(source[3]))
             return source + 3;
-        else
-            return source;
+        /* fall thru */
 
     default:
         return source;
@@ -51,14 +50,33 @@ size_t parse_and_measure_string(const char* source)
     return len;
 }
 
+size_t measure_escaped_string(const char* string)
+{
+    size_t len = 0;
+    char c;
+
+    while ((c = *string++) && c != '\n')
+    {
+        if (c == '"' || c == '\\')
+            ++len;
+
+        ++len;
+    }
+
+    return len + 2;
+}
+
 int main(void)
 {
     char str[50];
-    size_t sum = 0;
+    size_t parsed_diff = 0, escaped_diff = 0;
 
     while (fgets(str, 50, stdin))
-    {   /* '- 1' because fgets includes the line return in the string */
-        sum += strlen(str) - 1 - parse_and_measure_string(str);
+    {
+        size_t len = strlen(str) - 1; /* '- 1' because fgets includes the line return in the string */
+        
+        parsed_diff += len - parse_and_measure_string(str);
+        escaped_diff += measure_escaped_string(str) - len;
     }
 
     if (ferror(stdin))
@@ -67,7 +85,8 @@ int main(void)
         return EXIT_FAILURE;
     }
 
-    printf("The total size difference is %u.", sum);
+    printf("The total size difference after parsing is %u.\n", parsed_diff);
+    printf("The total size difference after escaping is %u.\n", escaped_diff);
 
     return EXIT_SUCCESS;
 }
