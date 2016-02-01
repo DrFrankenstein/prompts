@@ -2,34 +2,25 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
-char parse_escape(const char** source)
+const char* skip_escape(const char* source)
 {
-    const char* pos = *source;
-    char c = *++pos;
-
-    switch (c)
+    switch (source[1])
     {
     case '\\':
     case '"':
-        *source = pos;
-        break;
+        return source + 1;
 
     case 'x':
-        {
-        short s;    /* VC++ doesn't support format size prefix "hh" for 'char' */
-        if (!sscanf(++pos, "%2hx", &s))
-            return '\0';
-        c = (char) s;
-        *source = pos + 1;
-        break;
-        }
+        if (isxdigit(source[2]) && isxdigit(source[3]))
+            return source + 3;
+        else
+            return source;
 
     default:
-        return '\0';
+        return source;
     }
-
-    return c;
 }
 
 size_t parse_and_measure_string(const char* source)
@@ -46,7 +37,7 @@ size_t parse_and_measure_string(const char* source)
     while ((c = *++source) && c != '"')
     {
         if (c == '\\')
-            (void) parse_escape(&source);
+            source = skip_escape(source);
 
         ++len;
     }
