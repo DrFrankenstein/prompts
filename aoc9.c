@@ -186,54 +186,65 @@ void swap_cities(struct city** left, struct city** right)
     *right = mid;
 }
 
-unsigned try_routes(struct city** cities, size_t count)
+void try_route(struct city** cities, unsigned* shortest, unsigned* longest)
 {
-    static unsigned best_distance = UINT_MAX;
+    unsigned distance = measure_route(cities);
+
+    if (!distance)
+        /* can't get here from there */
+        return;
+
+    /*print_route(cities);
+    printf("= %u", distance);*/
+
+    if (distance < *shortest)
+    {
+        *shortest = distance;
+
+        fputs("New shortest: ", stdout);
+        print_route(cities);
+        printf("= %u\n", distance);
+        /*putchar('*');*/
+    }
+
+    if (distance > *longest)
+    {
+        *longest = distance;
+
+        fputs("New longest: ", stdout);
+        print_route(cities);
+        printf("= %u\n", distance);
+    }
+
+    /*putchar('\n');*/
+}
+
+void try_routes(struct city** cities, size_t count, unsigned* shortest, unsigned* longest)
+{
     size_t i;
 
     if (count == 1)
+        try_route(cities, shortest, longest);
+    else
     {
-        unsigned distance = measure_route(cities);
-
-        if (!distance)
-            /* can't get here from there */
-            return 0;
-
-        /*print_route(cities);
-        printf("= %u", distance);*/
-
-        if (distance < best_distance)
+        for (i = 0; i < count - 1; ++i)
         {
-            best_distance = distance;
+            try_routes(cities, count - 1, shortest, longest);
 
-            print_route(cities);
-            printf("= %u\n", distance);
-            /*putchar('*');*/
+            if ((count & 1) == 0)
+                swap_cities(cities + i, cities + (count - 1));
+            else
+                swap_cities(cities, cities + (count - 1));
         }
 
-        /*putchar('\n');*/
-        return 0;
+        try_routes(cities, count - 1, shortest, longest);
     }
-
-    for (i = 0; i < count - 1; ++i)
-    {
-        (void) try_routes(cities, count - 1);
-
-        if ((count & 1) == 0)
-            swap_cities(cities + i, cities + (count - 1));
-        else
-            swap_cities(cities, cities + (count - 1));
-    }
-
-    (void) try_routes(cities, count - 1);
-
-    return best_distance;
 }
 
 int main(void)
 {
     struct city* cities[MAX_CITIES + 1] = {0};
-    unsigned best_distance;
+    unsigned shortest = UINT_MAX, longest = 0;
     size_t count = 0;
 
     if (!parse_input(stdin, cities, MAX_CITIES))
@@ -242,9 +253,11 @@ int main(void)
     while (cities[count])
         ++count;
 
-    best_distance = try_routes(cities, count);
+    try_routes(cities, count, &shortest, &longest);
     
-    printf("The best distance is %u\n", best_distance);
+    printf("The shortest distance is %u\n"
+           "The longest distance is %u\n", 
+           shortest, longest);
 
     return EXIT_SUCCESS;
 }
