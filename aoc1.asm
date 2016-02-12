@@ -42,11 +42,11 @@ local bytesRead:dword
     invoke  ReadFile, stdin, addr char, 1, addr bytesRead, 0
     
     .if     eax == 0
-        invoke printf, offset errReadErr
+        invoke  printf, offset errReadErr
         ret
     .endif
     
-    .if bytesRead == 0
+    .if     bytesRead == 0
         xor     eax, eax
         ret
     .endif
