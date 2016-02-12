@@ -80,8 +80,11 @@ main proc uses ebx
     
     push    ebx
     invoke  printf, offset msgFinalFloor
+    add     esp, 4
 
     invoke  ExitProcess, 0
+    
+    ret
 main endp
 
 end
