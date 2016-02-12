@@ -18,6 +18,7 @@ errInvChar          db 'invalid character%n', 0
 errReadErr          db 'cannot read input file%n', 0
 
 msgFinalFloor       db 'final floor: %1!d!%n', 0
+msgBasement         db 'entered basement at step %1!u!%n', 0
 
 .data?
 stdout              dd ?
@@ -55,7 +56,7 @@ local bytesRead:dword
     ret
 nextChar endp
 
-main proc uses ebx
+main proc uses ebx esi di
 ;floor = ebx
     invoke  GetStdHandle, STD_INPUT_HANDLE
     mov     stdin, eax
@@ -63,6 +64,8 @@ main proc uses ebx
     mov     stdout, eax
 
     xor     ebx, ebx
+    xor     esi, esi
+    xor     di, di
     
     invoke  nextChar
     .while  al != 0
@@ -75,6 +78,15 @@ main proc uses ebx
             invoke  ExitProcess, 1
         .endif
         
+        .if     !di && ebx == -1
+            push    esi
+            invoke  printf, offset msgBasement
+            add     esp, 4
+            
+            mov     di, 1
+        .endif
+        
+        inc     esi
         invoke  nextChar
     .endw
     
