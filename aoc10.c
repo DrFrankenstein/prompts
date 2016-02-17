@@ -27,16 +27,21 @@ void generate_string(char* dest, const char* source)
     append_pair(dest, count, prev);
 }
 
+void output_len(unsigned iter, const char* result)
+{
+    printf("Length of result at iteration #%u: %u\n", iter, strlen(result));
+}
+
 int main(void)
 {
-    const unsigned MAX_ITER = 40;
+    const unsigned MAX_ITER = 50;
     unsigned i;
-    const char initial[] = "1321131112";
+    const char* initial = "1321131112";
     const char* prev;
     char* next;
 
-    for (i = 0, prev = initial;
-         i < MAX_ITER;
+    for (i = 1, prev = initial;
+         i <= MAX_ITER;
          ++i, prev = next)
     {
         /*puts(prev);*/
@@ -44,11 +49,12 @@ int main(void)
         next = malloc(strlen(prev) * sizeof(char) * 2 + 1);
         generate_string(next, prev);
 
-        if (prev != initial && i < MAX_ITER - 1)
+        if (prev != initial)
             free((void*) prev);
-    }
 
-    printf("Length of result: %u\n", strlen(prev));
+        if (i == 40 || i == 50)
+            output_len(i, next);
+    }
 
     return EXIT_SUCCESS;
 }
