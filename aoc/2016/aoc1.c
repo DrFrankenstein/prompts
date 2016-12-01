@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
 
 enum Heading { NORTH, EAST, SOUTH, WEST };
 enum Direction { LEFT = -1, RIGHT = 1 };
