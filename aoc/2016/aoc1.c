@@ -62,29 +62,7 @@ turn(enum Heading heading, enum Direction direction)
 
 static
 struct Coords
-step(struct Coords coords, enum Heading heading)
-{
-    if (heading & 2)
-    {
-        if (heading & 1)
-            --coords.x;
-        else
-            --coords.y;
-    }
-    else
-    {
-        if (heading & 1)
-            ++coords.x;
-        else
-            ++coords.y;
-    }
-
-    return coords;
-}
-
-static
-struct Coords
-run(struct Coords coords, enum Heading heading, int distance)
+walk(struct Coords coords, enum Heading heading, int distance)
 {
     if (heading & 2)
     {
@@ -106,6 +84,13 @@ run(struct Coords coords, enum Heading heading, int distance)
 
 static
 struct Coords
+step(struct Coords coords, enum Heading heading)
+{
+    return walk(coords, heading, 1);
+}
+
+static
+struct Coords
 move(struct Coords coords, enum Heading heading, int distance)
 {
     static bool crossed_tracks = false;
@@ -123,7 +108,7 @@ move(struct Coords coords, enum Heading heading, int distance)
 
     if (crossed_tracks && distance)
     {   // we no longer need to track our steps, so let's speed things up a bit.
-        coords = run(coords, heading, distance);
+        coords = walk(coords, heading, distance);
     }
 
     return coords;
