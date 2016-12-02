@@ -183,7 +183,8 @@ follow_directions(void)
     return coords;
 }
 
-int main()
+int
+main(void)
 {
     struct Coords final = follow_directions();
     printf("Final destination is %u blocks away.\n", manhattan_distance(final));
