@@ -29,6 +29,9 @@ been_there(struct Coords coords)
     enum { BUCKET_COUNT = 256U };
     static struct TraceEntry* buckets[BUCKET_COUNT];
 
+    if (coords.x == 0 && coords.y == 0)
+      return true; // we're back where we started
+
     size_t idx = hash_coords(coords) % BUCKET_COUNT;
     struct TraceEntry* entry = buckets[idx],
                      * prev = NULL;
