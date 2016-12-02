@@ -12,14 +12,14 @@ static
 unsigned int
 manhattan_distance(struct Coords coords)
 {
-    return abs(coords.x) + abs(coords.y);
+    return (unsigned) abs(coords.x) + (unsigned) abs(coords.y);
 }
 
 static
 size_t
 hash_coords(struct Coords coords)
 {
-    return (size_t) coords.x ^ coords.y;
+    return (size_t) (coords.x ^ coords.y);
 }
 
 static
@@ -60,7 +60,7 @@ static
 enum Heading
 turn(enum Heading heading, enum Direction direction)
 {
-    return heading + direction & 3;
+    return ((signed) heading + direction) & 3;
 }
 
 static
