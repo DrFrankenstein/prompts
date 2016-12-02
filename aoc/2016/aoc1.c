@@ -1,35 +1,143 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
+#include <stdbool.h>
 
 enum Heading { NORTH, EAST, SOUTH, WEST };
 enum Direction { LEFT = -1, RIGHT = 1 };
 struct Leg { enum Direction direction; int distance; };
 struct Coords { int x, y; };
+struct TraceEntry { struct Coords coords; struct TraceEntry* next; };
 
-enum Heading turn(enum Heading heading, enum Direction direction)
+static
+unsigned int
+manhattan_distance(struct Coords coords)
+{
+    return abs(coords.x) + abs(coords.y);
+}
+
+static
+size_t
+hash_coords(struct Coords coords)
+{
+    return (size_t) coords.x ^ coords.y;
+}
+
+static
+bool
+been_there(struct Coords coords)
+{
+    enum { BUCKET_COUNT = 256U };
+    static struct TraceEntry* buckets[BUCKET_COUNT];
+
+    size_t idx = hash_coords(coords) % BUCKET_COUNT;
+    struct TraceEntry* entry = buckets[idx],
+                     * prev = NULL;
+    while (entry != NULL)
+    {
+        if (entry->coords.x == coords.x && entry->coords.y == coords.y)
+            return true; // hey, I see our footprints in the snow!
+
+        prev = entry;
+        entry = entry->next;
+    }
+
+
+    entry = calloc(1, sizeof *entry);
+    entry->coords = coords;
+
+    if (prev != NULL)
+        prev->next = entry;
+    else
+        buckets[idx] = entry;
+
+    return false;
+}
+
+static
+enum Heading
+turn(enum Heading heading, enum Direction direction)
 {
     return heading + direction & 3;
 }
 
-void move(struct Coords* coords, enum Heading heading, int distance)
+static
+struct Coords
+step(struct Coords coords, enum Heading heading)
 {
-    int* component = (heading & 1)? &coords->y : &coords->x;
     if (heading & 2)
-        distance = -distance;
+    {
+        if (heading & 1)
+            --coords.x;
+        else
+            --coords.y;
+    }
+    else
+    {
+        if (heading & 1)
+            ++coords.x;
+        else
+            ++coords.y;
+    }
 
-    *component += distance;
-
-    printf("x = %3d, y = %3d\n", coords->x, coords->y);
+    return coords;
 }
 
-struct Leg parse_instr(void)
+static
+struct Coords
+run(struct Coords coords, enum Heading heading, int distance)
+{
+    if (heading & 2)
+    {
+        if (heading & 1)
+            coords.x -= distance;
+        else
+            coords.y -= distance;
+    }
+    else
+    {
+        if (heading & 1)
+            coords.x += distance;
+        else
+            coords.y += distance;
+    }
+
+    return coords;
+}
+
+static
+struct Coords
+move(struct Coords coords, enum Heading heading, int distance)
+{
+    static bool crossed_tracks = false;
+
+    while (!crossed_tracks && distance--)
+    {
+        coords = step(coords, heading);
+
+        if (been_there(coords))
+        {
+            printf("Easter Bunny HQ is %u blocks away.\n", manhattan_distance(coords));
+            crossed_tracks = true;
+        }
+    }
+
+    if (crossed_tracks && distance)
+    {   // we no longer need to track our steps, so let's speed things up a bit.
+        coords = run(coords, heading, distance);
+    }
+
+    return coords;
+}
+
+static
+struct Leg
+parse_instr(void)
 {
     struct Leg leg;
     char dircode;
-    int readstatus = scanf(" %c%d, ", &dircode, &leg.distance);
-    if (readstatus == EOF)
-    {   /* that pesky LF at the end of the input file... */
+    int readstatus = scanf("%c%d, ", &dircode, &leg.distance);
+    if (readstatus == 1 && dircode == '\n')
+    {   // that pesky LF at the end of the input file...
         leg.distance = 0;
         return leg;
     }
@@ -49,12 +157,12 @@ struct Leg parse_instr(void)
         abort();
     }
 
-    printf("turn %c, move %3d, ", dircode, leg.distance);
-
     return leg;
 }
 
-struct Coords follow_directions(void)
+static
+struct Coords
+follow_directions(void)
 {
     struct Coords coords = { 0 };
     enum Heading heading = NORTH;
@@ -63,7 +171,7 @@ struct Coords follow_directions(void)
     {
         struct Leg leg = parse_instr();
         heading = turn(heading, leg.direction);
-        move(&coords, heading, leg.distance);
+        coords = move(coords, heading, leg.distance);
     }
 
     if (ferror(stdin))
@@ -78,8 +186,7 @@ struct Coords follow_directions(void)
 int main()
 {
     struct Coords final = follow_directions();
-    int total_blocks = abs(final.x) + abs(final.y);
-    printf("Easter Bunny HQ is %d blocks away.\n", total_blocks);
+    printf("Final destination is %u blocks away.\n", manhattan_distance(final));
 
     return EXIT_SUCCESS;
 }
