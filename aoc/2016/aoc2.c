@@ -5,16 +5,20 @@ enum Direction { UP, RIGHT, DOWN, LEFT, PRESS };
 typedef unsigned char Digit;
 
 static const Digit transitions[][4] = {
-  //U, R, D, L
-  { 1, 2, 4, 1 }, // 1
-  { 2, 3, 5, 1 }, // 2
-  { 3, 3, 6, 2 }, // 3
-  { 1, 5, 7, 4 }, // 4
-  { 2, 6, 8, 4 }, // 5
-  { 3, 6, 9, 5 }, // 6
-  { 4, 8, 7, 7 }, // 7
-  { 5, 9, 8, 7 }, // 8
-  { 6, 9, 9, 8 }  // 9
+  //  U,   R,   D,   L
+  { 0x1, 0x1, 0x3, 0x1 }, // 1
+  { 0x2, 0x3, 0x6, 0x2 }, // 2
+  { 0x1, 0x4, 0x7, 0x2 }, // 3
+  { 0x4, 0x4, 0x8, 0x3 }, // 4
+  { 0x5, 0x6, 0x5, 0x5 }, // 5
+  { 0x2, 0x7, 0xA, 0x5 }, // 6
+  { 0x3, 0x8, 0xB, 0x6 }, // 7
+  { 0x4, 0x9, 0xC, 0x7 }, // 8
+  { 0x9, 0x9, 0x9, 0x8 }, // 9
+  { 0x6, 0xB, 0xA, 0xA }, // A
+  { 0x7, 0xC, 0xD, 0xA }, // B
+  { 0x8, 0xC, 0xC, 0xB }, // C
+  { 0xB, 0xD, 0xD, 0xD }  // D
 };
 
 static
@@ -28,7 +32,10 @@ static
 void
 print_digit(Digit digit)
 {
-  putchar('0' + digit);
+  if (digit > 9)
+    putchar('A' + digit - 0xA);
+  else
+    putchar('0' + digit);
 }
 
 static
@@ -76,4 +83,3 @@ main(void)
   
   return EXIT_SUCCESS;
 }
-
