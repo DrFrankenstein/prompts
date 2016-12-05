@@ -11,16 +11,19 @@ static bool triangle_valid(struct Triangle* t)
       && t->c < t->a + t->b;
 }
 
-static bool read_triangle(struct Triangle* triangle)
+static bool read_triangles(struct Triangle triangles[static 3])
 {
-  int status = scanf("%u %u %u", &triangle->a, &triangle->b, &triangle->c);
+  int status = scanf("%u %u %u %u %u %u %u %u %u",
+      &triangles[0].a, &triangles[1].a, &triangles[2].a,
+      &triangles[0].b, &triangles[1].b, &triangles[2].b,
+      &triangles[0].c, &triangles[1].c, &triangles[2].c);
   
   if (status == EOF)
     return false;
   
-  if (status < 3)
+  if (status < 9)
   {
-    perror("parse error in triangle");
+    perror("parse error in triangles");
     abort();
   }
   
@@ -30,10 +33,14 @@ static bool read_triangle(struct Triangle* triangle)
 static unsigned count_triangles(void)
 {
   unsigned count = 0;
-  struct Triangle triangle;
-  while(read_triangle(&triangle))
+  struct Triangle triangles[3];
+  while(read_triangles(triangles))
   {
-    if (triangle_valid(&triangle))
+    if (triangle_valid(&triangles[0]))
+      ++count;
+    if (triangle_valid(&triangles[1]))
+      ++count;
+    if (triangle_valid(&triangles[2]))
       ++count;
   }
   
