@@ -11,29 +11,15 @@
 # define STATIC_ARRAY_SIZE static
 #endif
 
-static bool parse_name(unsigned counts[STATIC_ARRAY_SIZE 26])
+static void classify_letters(const char* string, unsigned char counts[STATIC_ARRAY_SIZE 26])
 {
   int c;
-  while ((c = getchar()) != EOF)
-  {
+  while ((c = (int) *string++))
     if (isalpha(c))
       ++counts[c - 'a'];
-    else if (isdigit(c))
-    {
-      ungetc(c, stdin);
-      break;
-    }
-    else if (c != '-')
-    {
-      fprintf(stderr, "error: stray character '%c' in input\n", c);
-      abort();
-    }
-  }
-  
-  return c != EOF;
 }
 
-static size_t top_letter_index(unsigned counts[STATIC_ARRAY_SIZE 26])
+static size_t top_letter_index(unsigned char counts[STATIC_ARRAY_SIZE 26])
 {
   size_t top_idx = 0;
   unsigned top_count = 0;
@@ -50,8 +36,11 @@ static size_t top_letter_index(unsigned counts[STATIC_ARRAY_SIZE 26])
   return top_idx;
 }
 
-static void top_five_letters(unsigned counts[STATIC_ARRAY_SIZE 26], char top[STATIC_ARRAY_SIZE 5])
+static void top_five_letters(const char* string, char top[STATIC_ARRAY_SIZE 5])
 {
+  unsigned char counts[26] = { 0 };
+  classify_letters(string, counts);
+  
   for (size_t idx = 0; idx < 5; ++idx)
   {
     size_t top_idx = top_letter_index(counts);
@@ -60,27 +49,52 @@ static void top_five_letters(unsigned counts[STATIC_ARRAY_SIZE 26], char top[STA
   }
 }
 
-static unsigned next_room_sector(void)
+static void ceasar_decrypt(char* text, unsigned key)
 {
-  unsigned counts[26] = { 0 };
-  if (!parse_name(counts))
-    return 0;
+  char value = (char) (key % 26);
   
-  char top[5];
-  top_five_letters(counts, top);
+  char c;
+  while ((c = *text))
+  {
+    if (c == '-')
+      *text = ' ';
+    else
+      *text = (char) ((c - 'a' + value) % 26 + 'a');
+    
+    ++text;
+  }
+}
 
+static unsigned process_next_room(void)
+{
+  char name[101];
   unsigned sector;
   char chk[5];
-  int status = scanf("%u[%5c] ", &sector, chk);
+  // read up to 50 letters or dashes, then an unsigned number,
+  // then 5 characters between brackets, then whitespace (line break)
+  int status = scanf(
+    "%100[abcdefghijklmnopqrstuvwxyz-]%u[%5c] ",
+    name, &sector, chk
+  );
   
-  if (status < 2)
+  if (status == EOF)
+    return 0;
+  
+  if (status < 3)
   {
     perror("error: parse error in input; stream status");
     abort();
   }
   
+  char top[5];
+  top_five_letters(name, top);
+  
   if (memcmp(top, chk, 5) != 0)
     return 0;
+  
+  ceasar_decrypt(name, sector);
+  if (strstr(name, "northpole object"))
+    printf("Sector: %3u, Room: %s\n", sector, name);
   
   return sector;
 }
@@ -89,9 +103,7 @@ int main(void)
 {
   unsigned sum = 0;
   while (!feof(stdin))
-  {
-    sum += next_room_sector();
-  }
+    sum += process_next_room();
   
   printf("The sum of all the sector IDs is %u.\n", sum);
   
