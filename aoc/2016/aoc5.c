@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <stdbool.h>
+#include <string.h>
 
 #define PROTOTYPES 1
 #include "deps/md5/global.h"
@@ -16,27 +17,26 @@ static void hash_string(char* in, size_t len, unsigned char out[static 16])
   MD5Final(out, &ctx);
 }
 
-static bool try_gen_char(char* in, size_t len, char* out)
+static void try_gen_char(char* in, size_t len, char pass[static 8])
 {
   unsigned char hash[16];
   hash_string(in, len, hash);
-  bool good = !hash[0] && !hash[1] && !(hash[2] & 0xf0);
-
-  if (good)
+  
+  unsigned char position = (unsigned char) (hash[2] & 0x0f);
+  if (position < 8 && !pass[position] &&
+      !hash[0] && !hash[1] && !(hash[2] & 0xf0))
   {
     printf("good hash found. key=%s, hash=", in);
-    for (size_t idx = 0; idx < 16; ++idx)
-      printf("%02hhx", hash[idx]);
+    for (size_t i = 0; i < 16; ++i)
+      printf("%02hhx", hash[i]);
     putchar('\n');
     
-    *out = (char) (hash[2] & 0x0f);
-    if (*out >= 0x0a)
-      *out += 'a' - 0xa;
+    char ch = (char) (hash[3] >> 4);
+    if (ch >= 0x0a)
+      pass[position] = ch + 'a' - 0xa;
     else
-      *out += '0';
+      pass[position] = ch + '0';
   }
-  
-  return good;
 }
 
 static void crack_password(char door_id[static 32], size_t idlen, char pass[static 8])
@@ -44,8 +44,8 @@ static void crack_password(char door_id[static 32], size_t idlen, char pass[stat
   char* numstr = door_id + idlen;
   size_t numlen = 31 - idlen;
   
-  size_t goodcount = 0;
-  for (unsigned idx = 0; goodcount < 8 && idx < UINT_MAX; ++idx)
+  memset(pass, 0, 8);
+  for (unsigned idx = 0; idx < UINT_MAX && memchr(pass, 0, 8); ++idx)
   {
     int written = snprintf(numstr, numlen + 1, "%u", idx);
     
@@ -58,24 +58,23 @@ static void crack_password(char door_id[static 32], size_t idlen, char pass[stat
     if ((size_t) written > numlen)
     {
       puts("error: cannot figure out password, ran out of space for the index");
-      exit(1);
+      exit(EXIT_FAILURE);
     }
     
-    if (try_gen_char(door_id, idlen + (size_t) written, &pass[goodcount]))
-        ++goodcount;
+    try_gen_char(door_id, idlen + (size_t) written, pass);
   }
   
-  if (goodcount < 8)
+  if (memchr(pass, 0, 8))
   {
     puts("error: cannot figure out password, ran out of indexes");
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 }
 
 int main(void)
 {
   char door_id[32];
-  size_t seedlen = fread(door_id, 1, 31, stdin);
+  size_t idlen = fread(door_id, 1, 31, stdin);
   
   if (ferror(stdin))
   {
@@ -84,7 +83,7 @@ int main(void)
   }
   
   char pass[8];
-  crack_password(door_id, seedlen, pass);
+  crack_password(door_id, idlen, pass);
   
   printf("The password for the security door is: %.8s\n", pass);
 }
