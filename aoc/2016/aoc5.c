@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <limits.h>
 #include <stdbool.h>
-#include <string.h>
 
+#define PROTOTYPES 1
 #include "deps/md5/global.h"
 #include "deps/md5/md5.h"
 #include "deps/md5/md5c.c" // ugly, but I want my AoC solutions to be self-contained. remove this and build accordingly if it prevents you from sleeping at night.
