@@ -9,7 +9,14 @@
 #include "deps/md5/md5.h"
 #include "deps/md5/md5c.c" // ugly, but I want my AoC solutions to be self-contained. remove this and build accordingly if it prevents you from sleeping at night.
 
-static void output_status(unsigned char hash[static 16], char pass[static 8])
+// CL doesn't support static array arguments
+#ifdef _MSC_VER
+# define STATIC_ARRAY_SIZE
+#else
+# define STATIC_ARRAY_SIZE static
+#endif
+
+static void output_status(unsigned char hash[STATIC_ARRAY_SIZE 16], char pass[STATIC_ARRAY_SIZE 8])
 {
   putchar('\r');
   for (size_t i = 0; i < 16; ++i)
@@ -18,7 +25,7 @@ static void output_status(unsigned char hash[static 16], char pass[static 8])
   printf(" ... H4XX1NG P455W0RD ... %.8s", pass);
 }
 
-static void hash_string(char* in, size_t len, unsigned char out[static 16])
+static void hash_string(char* in, size_t len, unsigned char out[STATIC_ARRAY_SIZE 16])
 {
   MD5_CTX ctx;
   MD5Init(&ctx);
@@ -26,7 +33,7 @@ static void hash_string(char* in, size_t len, unsigned char out[static 16])
   MD5Final(out, &ctx);
 }
 
-static void try_gen_char(char* in, size_t len, char pass[static 8], unsigned idx)
+static void try_gen_char(char* in, size_t len, char pass[STATIC_ARRAY_SIZE 8], unsigned idx)
 {
   unsigned char hash[16];
   hash_string(in, len, hash);
@@ -47,7 +54,7 @@ static void try_gen_char(char* in, size_t len, char pass[static 8], unsigned idx
     output_status(hash, pass);
 }
 
-static void crack_password(char door_id[static 32], size_t idlen, char pass[static 8])
+static void crack_password(char door_id[STATIC_ARRAY_SIZE 32], size_t idlen, char pass[STATIC_ARRAY_SIZE 8])
 {
   char* numstr = door_id + idlen;
   size_t numlen = 31 - idlen;
