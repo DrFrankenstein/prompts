@@ -4,6 +4,8 @@
 #include <string.h>
 #include <limits.h>
 
+#define T_PAAMAYIM_NEKUDOTAYIM "::"
+
 enum Constants
 {
   CHARSET_SIZE = 1 << CHAR_BIT,
@@ -60,5 +62,5 @@ int main(void)
 
   decode_message(ec_state, message, maxlen);
 
-  printf("The message is: %s\n", message);
+  printf("The message is"T_PAAMAYIM_NEKUDOTAYIM" %s\n", message);
 }
