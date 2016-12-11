@@ -2,13 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-// CL doesn't support static array arguments
-#ifdef _MSC_VER
-# define STATIC_ARRAY_SIZE
-#else
-# define STATIC_ARRAY_SIZE static
-#endif
+#include <limits.h>
 
 enum Constants
 {
@@ -35,14 +29,14 @@ static void decode_message(ErrorCorrectionState state, char* message, size_t len
 {
   for (size_t idx = 0; idx < len; ++idx)
   {
-    unsigned short max_freq = 0;
+    unsigned short min_freq = USHRT_MAX;
     char decoded = '\0';
     for (short c = 0; c < CHARSET_SIZE; ++c)
     {
       unsigned short freq = state[c][idx];
-      if (freq > max_freq)
+      if (freq != 0 && freq < min_freq)
       {
-        max_freq = freq;
+        min_freq = freq;
         decoded = (char) c;
       }
     }
