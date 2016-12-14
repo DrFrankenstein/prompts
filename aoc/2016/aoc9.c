@@ -2,50 +2,51 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <limits.h>
 
 struct RepeatMarker { size_t len; unsigned repeats; };
 
-static bool parse_marker(struct RepeatMarker* marker)
+static long parse_marker(struct RepeatMarker* marker)
 {
   long at = ftell(stdin);
   int status = scanf("%zux%u", &marker->len, &marker->repeats);
   
-  if (status != 2 || getchar() != ')')
+  if (status != 2 || getchar() != ')' || marker->len > INT_MAX)
   {
     fseek(stdin, at, SEEK_SET);
-    return false;
+    return 0;
   }
   
-  return true;
+  return ftell(stdin) - at;
 }
 
-static void skip(size_t len)
-{
-  int c;
-  while (len != 0 && (c = getchar()) != EOF)
-    if (!isspace(c))
-      --len;
-}
-
-static size_t decompressed_len(void)
+static size_t decompressed_len(long chunklen)
 {
   size_t len = 0;
   int c;
-  while ((c = getchar()) != EOF)
+  bool has_chunklen = chunklen != -1;
+  while ((!has_chunklen || chunklen > 0) && (c = getchar()) != EOF)
   {
     if (c == '(')
     {
       struct RepeatMarker marker;
-      if (parse_marker(&marker))
+      long parsed = parse_marker(&marker);
+      if (parsed > 0)
       {
-        len += marker.len * marker.repeats;
-        skip(marker.len);
+        len += marker.repeats * decompressed_len((int) marker.len);
+        chunklen -= parsed + (long) marker.len + 1;
       }
       else
+      {
         ++len;
+        --chunklen;
+      }
     }
     else if (!isspace(c))
+    {
       ++len;
+      --chunklen;
+    }
   }
   
   return len;
@@ -53,5 +54,5 @@ static size_t decompressed_len(void)
 
 int main(void)
 {
-  printf("The length of the decompressed file is %zu.\n", decompressed_len());
+  printf("The length of the decompressed file is %zu.\n", decompressed_len(-1));
 }
