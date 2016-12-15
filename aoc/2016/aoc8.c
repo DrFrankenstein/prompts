@@ -15,7 +15,7 @@ static void render(Screen screen)
   {
     uint64_t pixels = screen[row];
     for (unsigned col = 0; col < 50; ++col, pixels >>= 1)
-putchar(pixels & 1? '#' : '.');
+      putchar(pixels & 1? '#' : '.');
     putchar('\n');
   }
 }
