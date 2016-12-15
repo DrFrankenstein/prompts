@@ -20,33 +20,38 @@ static long parse_marker(struct RepeatMarker* marker)
   return ftell(stdin) - at;
 }
 
+static void process_char(size_t* len, long* chunklen)
+{
+  ++*len;
+  --*chunklen;
+}
+
+static size_t decompressed_len(long chunklen);
+
+static void process_marker(size_t* len, long* chunklen)
+{
+  struct RepeatMarker marker;
+  long parsed = parse_marker(&marker);
+  if (parsed > 0)
+  {
+    *len += marker.repeats * decompressed_len((int) marker.len);
+    *chunklen -= parsed + (long) marker.len + 1;
+  }
+  else
+    process_char(len, chunklen);
+}
+
 static size_t decompressed_len(long chunklen)
 {
   size_t len = 0;
   int c;
   bool has_chunklen = chunklen != -1;
-  while ((!has_chunklen || chunklen > 0) && (c = getchar()) != EOF)
+  while ((!has_chunklen || chunklen > 0) && !feof(stdin) && (c = getchar()) != EOF)
   {
     if (c == '(')
-    {
-      struct RepeatMarker marker;
-      long parsed = parse_marker(&marker);
-      if (parsed > 0)
-      {
-        len += marker.repeats * decompressed_len((int) marker.len);
-        chunklen -= parsed + (long) marker.len + 1;
-      }
-      else
-      {
-        ++len;
-        --chunklen;
-      }
-    }
+      process_marker(&len, &chunklen);
     else if (!isspace(c))
-    {
-      ++len;
-      --chunklen;
-    }
+      process_char(&len, &chunklen);
   }
   
   return len;
