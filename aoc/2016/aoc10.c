@@ -43,10 +43,7 @@ static void try_act(struct Bot* bot, unsigned char botid)
   }
 
   if (low == 17 && high == 61)
-  {
     printf("Bot %hhu compares microchips 61 and 17.\n", botid);
-    exit(EXIT_SUCCESS); // done, we got what we wanted.
-  }
   
   bot->chips[0] = bot->chips[1] = 0;
 
@@ -210,6 +207,9 @@ int main(void)
   
   while (!feof(stdin))
     parse_instruction();
+  
+  int prod = outputs[0] * outputs[1] * outputs[2];
+  printf("The product of outputs 0, 1 and 2 is %d.\n", prod);
 
-  return EXIT_FAILURE; // never found our bot
+  return EXIT_SUCCESS;
 }
