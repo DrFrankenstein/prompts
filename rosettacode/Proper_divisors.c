@@ -68,6 +68,7 @@ print_divisors(ubound)
   for (n = 1; n <= ubound; ++n)
   {
     int divisor = next_divisor(n, 0);
+    printf("Divisors of %d: ", n);
     while (divisor != 0)
     {
       printf("%d ", divisor);
