@@ -3,16 +3,16 @@
 #include <stdio.h>
 
 static int find_pivot(int n)
-{ // simply caches the square root of a number to
-  // avoid recomputing it in a loop
+{ /* simply caches the square root of a number to
+     avoid recomputing it in a loop */
   static int last_n = 0;
   static int pivot = 0;
 
   if (n != last_n)
   {
-    last_n = n;
     double dpivot = sqrt(n);
     pivot = (int) dpivot;
+    last_n = n;
   }
 
   return pivot;
@@ -20,10 +20,12 @@ static int find_pivot(int n)
 
 static int next_divisor(int n, int last)
 {
+  int pivot;
+
   if (n < 2)
     return 0;
 
-  int pivot = find_pivot(n);
+  pivot = find_pivot(n);
   while (++last <= pivot)
   {
     int rem = n % last;
@@ -35,9 +37,8 @@ static int next_divisor(int n, int last)
 
   while (--last > 1)
   {
-    div_t result = div(n, last);
-    if (result.rem == 0)
-      return result.quot;
+    if (n % last == 0)
+      return n / last;
   }
 
   return 0;
@@ -62,10 +63,11 @@ static unsigned count_divisors(int n)
 
 static void print_divisors(int ubound)
 {
-  for (int n = 1; n <= ubound; ++n)
+  int n;
+  for (n = 1; n <= ubound; ++n)
   {
-    printf("Divisors of %d: ", n);
     int divisor = 0;
+    printf("Divisors of %d: ", n);
     while ((divisor = next_divisor(n, divisor)))
       printf("%d ", divisor);
 
@@ -77,7 +79,8 @@ static void find_most_divisors(int ubound)
 {
   int most_n = 0;
   unsigned most_count = 0;
-  for (int n = 1; n <= ubound; ++n)
+  int n;
+  for (n = 1; n <= ubound; ++n)
   {
     unsigned count = count_divisors(n);
     if (count > most_count)
@@ -98,4 +101,3 @@ int main(void)
 
   return EXIT_SUCCESS;
 }
-
