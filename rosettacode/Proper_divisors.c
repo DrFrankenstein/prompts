@@ -48,13 +48,15 @@ static unsigned count_divisors(int n)
   unsigned count = 0;
   int pivot = find_pivot(n);
 
-  int divisor = 0;
-  while ((divisor = next_divisor(n, divisor)) && divisor <= pivot)
+  int divisor = next_divisor(n, 0);
+  while (divisor != 0 && divisor <= pivot)
   {
     if (divisor == 1 || divisor == pivot)
       ++count;
     else
       count += 2;
+    
+    divisor = next_divisor(n, divisor);
   }
 
   return count;
@@ -65,9 +67,12 @@ static void print_divisors(int ubound)
   for (int n = 1; n <= ubound; ++n)
   {
     printf("Divisors of %d: ", n);
-    int divisor = 0;
-    while ((divisor = next_divisor(n, divisor)))
+    int divisor = next_divisor(n, 0);;
+    while (divisor != 0)
+    {
       printf("%d ", divisor);
+      divisor = next_divisor(n, divisor);
+    }
 
     putchar('\n');
   }
