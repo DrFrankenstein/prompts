@@ -13,18 +13,19 @@ enum Aliquot
     NONTERMINATING
 };
 
-static long long sum_divisors(long long n)
+static long sum_divisors(long n)
 {
+    double dlimit = sqrt((double) n);
+    long limit = (long) dlimit;
+    long c;
+    long sum = 1;
+
     if (n == 1)
         return 0;
 
-    long long sum = 1;
-    double dlimit = sqrt((double) n);
-    long long limit = (long long) dlimit;
-
-    for (long long c = 2; c <= limit; ++c)
+    for (c = 2; c <= limit; ++c)
     {
-        lldiv_t result = lldiv(n, c);
+        ldiv_t result = ldiv(n, c);
         if (result.rem == 0)
         {
             sum += c;
@@ -36,9 +37,9 @@ static long long sum_divisors(long long n)
     return sum;
 }
 
-static enum Aliquot check_class(long long* terms, size_t idx)
+static enum Aliquot check_class(long* terms, size_t idx)
 {
-    long long curr = terms[idx];
+    long curr = terms[idx];
 
     if (curr == 0)
         return TERMINATING;
@@ -63,20 +64,24 @@ static enum Aliquot check_class(long long* terms, size_t idx)
     return NONTERMINATING;
 }
 
-static enum Aliquot classify(long long k)
+static enum Aliquot classify(long k)
 {
-    long long terms[17];
+    long terms[17];
+    size_t i;
+    enum Aliquot class;
+
     terms[0] = k;
-    for (size_t i = 1; i < 17; ++i)
+
+    for (i = 1; i < 17; ++i)
     {
         if (k > 140737488355328)
             return NONTERMINATING;
 
         k = sum_divisors(k);
         terms[i] = k;
-        printf(" %lld", k);
+        printf(" %ld", k);
 
-        enum Aliquot class = check_class(terms, i);
+        class = check_class(terms, i);
         if (class != NONTERMINATING)
             return class;
     }
@@ -97,24 +102,31 @@ static const char* class_name(enum Aliquot class)
         case NONTERMINATING: return "Non-terminating";
     }
 
-    abort(); // keep gcc happy
+    abort(); /* keep gcc happy */
 }
 
-static const long long ks[] = {
+static const long ks[] = {
     1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
     11, 12, 28, 496, 220, 1184, 12496, 1264460,
-    790, 909, 562, 1064, 1488, 15355717786080
+    790, 909, 562, 1064, 1488
 };
 static const size_t kcount = sizeof ks / sizeof *ks;
 
 int main()
 {
-    for (size_t idx = 0; idx < kcount; ++idx)
+    size_t idx;
+    for (idx = 0; idx < kcount; ++idx)
     {
-        long long k = ks[idx];
-        printf("%lld:", k);
-        enum Aliquot class = classify(k);
-        const char* name = class_name(class);
+        enum Aliquot class;
+        long k = ks[idx];
+        const char* name;
+
+        printf("%ld:", k);
+        class = classify(k);
+        name = class_name(class);
         printf(" %s\n", name);
     }
+
+    return EXIT_SUCCESS;
 }
+
