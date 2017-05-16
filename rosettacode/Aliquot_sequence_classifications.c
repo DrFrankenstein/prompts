@@ -72,15 +72,13 @@ static enum Aliquot classify(long long k)
         if (k > 140737488355328)
             return NONTERMINATING;
 
-        long long sum = sum_divisors(k);
-        terms[i] = sum;
-        printf(" %lld", sum);
+        k = sum_divisors(k);
+        terms[i] = k;
+        printf(" %lld", k);
 
         enum Aliquot class = check_class(terms, i);
         if (class != NONTERMINATING)
             return class;
-
-        k = sum;
     }
 
     return NONTERMINATING;
