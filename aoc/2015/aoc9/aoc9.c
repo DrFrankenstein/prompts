@@ -98,7 +98,7 @@ int parse_input(FILE* stream, struct city** cities, size_t maxcount)
         unsigned distance;
         struct city* fromcity, 
                    * tocity;
-        int parse_status = scanf("%15s to %15s = %u\n", from, to, &distance);
+        int parse_status = fscanf(stream, "%15s to %15s = %u\n", from, to, &distance);
 
         if (parse_status != 3)
         {
