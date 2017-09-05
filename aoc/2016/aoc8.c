@@ -74,8 +74,8 @@ static struct Instruction parse_shift(void)
 {
   struct Instruction instruction;
   char type[7];
-  char coord;
-  int status = scanf("%6s %[xy]=%u by %u", type, &coord, &instruction.p1, &instruction.p2);
+  char coord[2];
+  int status = scanf("%6s %1[xy]=%u by %u", type, coord, &instruction.p1, &instruction.p2);
   if (status < 3)
   {
     fputs("error: parse error in 'rotate' command\n", stderr);
@@ -84,14 +84,14 @@ static struct Instruction parse_shift(void)
   
   if (strcmp(type, "row") == 0)
   {
-    if (coord != 'y')
-      fprintf(stderr, "warning: invalid coordinate identifier '%c' in 'rotate row' command. assuming 'y'\n", coord);
+    if (coord[0] != 'y')
+      fprintf(stderr, "warning: invalid coordinate identifier '%c' in 'rotate row' command. assuming 'y'\n", coord[0]);
     instruction.opcode = SHIFTROW;
   }
   else if (strcmp(type, "column") == 0)
   {
-    if (coord != 'x')
-      fprintf(stderr, "warning: invalid coordinate identifier '%c' in 'rotate column' command. assuming 'x'\n", coord);
+    if (coord[0] != 'x')
+      fprintf(stderr, "warning: invalid coordinate identifier '%c' in 'rotate column' command. assuming 'x'\n", coord[0]);
     instruction.opcode = SHIFTCOL;
   }
   else
