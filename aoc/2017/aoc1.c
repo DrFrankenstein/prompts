@@ -2,41 +2,51 @@
 #include <stdio.h>
 #include <ctype.h>
 
-int char_to_digit(int c)
+int char_to_digit(char c)
 {
 	return c - '0';
 }
 
-int get_next_digit(FILE* stream)
+char* read_file(FILE* stream, size_t* len)
 {
-	int c;
-	do
+	char* string = NULL;
+	size_t size = 0;
+	while (!feof(stream))
 	{
-		c = getchar();
-	} while (!isdigit(c) && !feof(stream));
+#pragma warning(suppress: 6308) // we're bailing out if it fails anyway
+		string = realloc(string, size + 1);
 
-	return c;
+		if (string == NULL)
+			exit(EXIT_FAILURE);
+
+		int ch = getc(stream);
+		if (ch == EOF)
+			ch = '\0';
+		else if (!isdigit(ch))
+			continue;
+
+		string[size++] = (char) ch;
+	}
+
+	*len = size - 1;
+	return string;
 }
 
 int solve_reverse_captcha(FILE* stream)
 {
-	int first = getchar(),
-		c1 = 0, 
-		c2 = first,
-		sum = 0;
+	unsigned sum = 0;
+	size_t len;
+	char* string = read_file(stream, &len);
 
-	while (!feof(stdin))
+	size_t middle = len / 2;
+
+	for (size_t p1 = 0, p2 = middle; p1 < middle; p1++, p2++)
 	{
-		c1 = c2;
-
-		c2 = get_next_digit(stdin);
-
-		if (c1 == c2)
-			sum += char_to_digit(c1);
+		if (string[p1] == string[p2])
+			sum += char_to_digit(string[p1]);
 	}
 
-	if (c1 == first)
-		sum += char_to_digit(c1);
+	return sum * 2;
 }
 
 int main(void)
