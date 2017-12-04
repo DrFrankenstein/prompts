@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include <ctype.h>
 
-int char_to_digit(char c)
+static unsigned char char_to_digit(char c)
 {
-	return c - '0';
+	return (unsigned char) (c - '0');
 }
 
-char* read_file(FILE* stream, size_t* len)
+static char* read_file(FILE* stream, size_t* len)
 {
 	char* string = NULL;
 	size_t size = 0;
@@ -32,7 +32,7 @@ char* read_file(FILE* stream, size_t* len)
 	return string;
 }
 
-int solve_reverse_captcha(FILE* stream)
+static unsigned solve_reverse_captcha(FILE* stream)
 {
 	unsigned sum = 0;
 	size_t len;
@@ -51,8 +51,8 @@ int solve_reverse_captcha(FILE* stream)
 
 int main(void)
 {
-	int sum = solve_reverse_captcha(stdin);
-	printf("Sum: %d\n", sum);
+	unsigned sum = solve_reverse_captcha(stdin);
+	printf("Sum: %u\n", sum);
 
 	return EXIT_SUCCESS;
 }
