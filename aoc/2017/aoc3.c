@@ -3,7 +3,7 @@
 #include <math.h>
 
 int dist_to_port(int n)
-{
+{	// sequence A214526 (OEIS)
 	if (n == 1)
 		return 0;
 
