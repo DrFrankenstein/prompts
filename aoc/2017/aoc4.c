@@ -14,28 +14,63 @@ struct WordEntry
 enum { DICT_SIZE = 8 };
 typedef struct WordEntry* Dict[DICT_SIZE];
 
-static uint32_t hash_word(Word word)
-{
-	uint32_t hash = 0;
-	char* p = word;
-	while (*p)
-	{
-		hash = ((hash << 8) | (hash >> 24)) ^ *p;
-		++p;
-	}
+/* How we record and find anagrams:
+ *
+ * First of all, we add up all the characters in the word (checksum()).
+ * This way, anagrams will produce the same checksums.
+ *
+ * Then we check against a small index to see if we might have a match.
+ * We only check for checksum % DICT_SIZE, so collisions are likely, but this
+ * is just to avoid having to check every word against every possible word.
+ *
+ * Then, in is_anagram(), we loop through each letter in the word, crossing
+ * off (replacing with '_') every matching letter in the candidate. As soon as
+ * a search fails, we conclude it's not an anagram.
+ *
+ * If it is in fact not an anagram, we continue walking through possible
+ * matches and repeat the test, or fail to find one and add that word to the
+ * index and go on.
+ */
 
-	return hash;
+static unsigned checksum(const Word word)
+{
+	unsigned sum = 0;
+
+	while (*word)
+		sum += (unsigned) *word++;
+
+	return sum;
+}
+
+static bool is_anagram(Word left, Word right)
+{
+	if (strlen(left) != strlen(right))
+		return false;
+
+	Word word;
+	strcpy(word, left);
+
+	while (*right)
+	{
+		char* c = strchr(word, *right++);
+		if (c)
+			*c = '_';
+		else
+			return false;
+	}
+	
+	return true;
 }
 
 static bool check_word(Word word, Dict dict)
 {
-	uint32_t idx = hash_word(word) % DICT_SIZE;
+	unsigned idx = checksum(word) % DICT_SIZE;
 	struct WordEntry* ent = dict[idx];
 	struct WordEntry* prev = NULL;
 
 	while (ent)
 	{
-		if (strcmp(ent->word, word) == 0)
+		if (is_anagram(ent->word, word))
 			return false;
 
 		prev = ent;
@@ -119,7 +154,7 @@ static void purge_line(FILE* list)
 	do
 	{
 		c = getc(list);
-	} while (c != '\n');
+	} while (c != '\n' && c != EOF);
 }
 
 static bool validate_next_passphrase(FILE* list)
