@@ -8,6 +8,7 @@ public:
     void up() { ++floornum; }
     void down() { --floornum; }
     int currentFloor() const { return floornum; }
+    bool inBasement() const { return floornum < 0; }
 
 private:
     int floornum {0};
@@ -24,9 +25,13 @@ public:
     {
         char command;
         while (input.get(command))
+        {
             execCommand(command);
+            checkBasement();
+        }
     }
 
+private:
     void execCommand(char command)
     {
         switch (command)
@@ -42,9 +47,21 @@ public:
         }
     }
 
-private:
+    void checkBasement()
+    {
+        if (reachedBasement)
+            return;
+
+        if (elevator.inBasement())
+        {
+            reachedBasement = true;
+            cout << "Elevator entered basement at command position " << input.tellg() << endl;
+        }
+    }
+
     Elevator& elevator;
     istream& input;
+    bool reachedBasement {false};
 };
 
 int main()
