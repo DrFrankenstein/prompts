@@ -89,7 +89,7 @@ private:
         if (!(input >> claim.width))
             throw ParseError("error parsing width");
 
-        expect ('x');
+        expect('x');
 
         if (!(input >> claim.length))
             throw ParseError("error parsing length");
@@ -143,15 +143,15 @@ private:
 int main()
 {
     auto start = chrono::high_resolution_clock::now();
+
     FabricMapper<unsigned short, 1000, 1000> mapper;
 
     istream_iterator<Claim> claims (cin);
     for_each(claims, {}, [&](const Claim& claim) { mapper.addClaim(claim); });
 
-    auto end = chrono::high_resolution_clock::now();
-
     cout << mapper.conflicts() << " square inches of fabric are in conflict." << endl;
     
+    auto end = chrono::high_resolution_clock::now();
     auto time = chrono::duration_cast<chrono::microseconds>(end - start);
     cout << "Took " << time.count() << " µs." << endl;
 }
