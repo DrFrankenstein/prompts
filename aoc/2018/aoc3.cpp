@@ -3,6 +3,7 @@
 #include <sstream>
 #include <algorithm>
 #include <chrono>
+#include <unordered_set>
 
 #include <boost/multi_array.hpp>
 
@@ -26,73 +27,96 @@ public:
         : input(input)
     { }
 
-    void readNext(Claim& claim)
+    bool readNext(Claim& claim)
     {
-        expect('#');
+        if (!parseId(claim))
+            return false;
 
-        if (input.eof())
-            return;
+        if (!parseLocation(claim))
+            return false;
 
-        parseId(claim);
-        parseLocation(claim);
-        parseSize(claim);
+        if (!parseSize(claim))
+            return false;
+
+        return true;
     }
 
-    class ParseError : public runtime_error
-    {
-    public:
-        ParseError(const string& message)
-            : runtime_error(message)
-        {}
-    };
-
 private:
-    void expect(char expected)
+    bool expect(char expected)
     {
         char actual;
         input >> actual;
 
-        if (input.eof())
-            return;
+        if (!input)
+            return false;
 
         if (actual != expected)
         {
-            ostringstream msg;
-            msg << "expected '" << expected << "' but got '" << actual << "'";
-            throw ParseError(msg.str());
+            cerr << "expected '" << expected << "' but got '" << actual << "'" << endl;
+            return false;
         }
+
+        return true;
     }
 
-    void parseId(Claim& claim)
+    bool parseId(Claim& claim)
     {
+        if (!expect('#'))
+            return false;
+
         if (!(input >> claim.id))
-            throw ParseError("error parsing id");
+        {
+            cerr << "error parsing id" << endl;
+            return false;
+        }
+
+        return true;
     }
 
-    void parseLocation(Claim& claim)
+    bool parseLocation(Claim& claim)
     {
-        expect('@');
+        if (!expect('@'))
+            return false;
 
         if (!(input >> claim.x))
-           throw ParseError("error parsing x-location");
+        {
+            cerr << "error parsing x-location" << endl;
+            return false;
+        }
 
-        expect(',');
+        if (!expect(','))
+            return false;
 
         if (!(input >> claim.y))
-            throw ParseError("error parsing y-location");
+        {
+            cerr << "error parsing y-location" << endl;
+            return false;
+        }
+
+        return true;
     }
 
-    void parseSize(Claim& claim)
+    bool parseSize(Claim& claim)
     {
-        expect(':');
+        if (!expect(':'))
+            return false;
 
         if (!(input >> claim.width))
-            throw ParseError("error parsing width");
+        {
+            cerr << "error parsing width" << endl;
+            return false;
+        }
 
-        expect('x');
+        if (!expect('x'))
+            return false;
 
         if (!(input >> claim.length))
-            throw ParseError("error parsing length");
+        {
+            cerr << "error parsing length" << endl;
+            return false;
+        }
+
+        return true;
     }
 private:
     istream& input;
@@ -101,15 +125,8 @@ private:
 istream& operator >>(istream& input, Claim& claim)
 {
     ClaimParser parser (input);
-    try
-    {
-        parser.readNext(claim);
-    }
-    catch (ClaimParser::ParseError& pe)
-    {
-        cerr << pe.what() << endl;
+    if (!parser.readNext(claim))
         input.setstate(ios::failbit);
-    }
 
     return input;
 }
