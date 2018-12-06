@@ -139,34 +139,71 @@ public:
     {
         auto scissors = indices[index_range(claim.y, claim.y + claim.length)][index_range(claim.x, claim.x + claim.width)];
         auto piece = map[scissors];
+        bool clean = true;
         for (auto row : piece)
             for (T& cell : row)
-            {
-                ++cell;
-            }
+                if (!claimCell(claim, cell))
+                    clean = false;
+
+        if (clean)
+            cleanClaims.insert(claim.id);
     }
 
     long long conflicts() const
     {
         return accumulate(cbegin(map), cend(map), 0LL, [](auto count, auto row) {
-            return count + count_if(cbegin(row), cend(row), [](T val) { return val > 1; });
+            return count + count_if(cbegin(row), cend(row), [](T val) { return val == -1; });
         });
     }
 
+    int cleanClaim() const
+    {
+        auto size = cleanClaims.size();
+        if (size == 0)
+        {
+            cerr << "warning: all claims conflict." << endl;
+            return 0;
+        }
+
+        if (size > 1)
+            cerr << "warning: several non-conflicting claims." << endl;
+
+        return *cbegin(cleanClaims);
+    }
+
 private:
+    bool claimCell(const Claim& claim, T& cell)
+    {
+        if (cell == 0)
+        {
+            cell = claim.id;
+            return true;
+        }
+
+        auto elem = cleanClaims.find(cell);
+        if (elem != end(cleanClaims))
+            cleanClaims.erase(elem);
+
+        cell = -1;
+
+        return false;
+    }
+
     multi_array<T, 2> map { extents[FABRIC_LENGTH][FABRIC_WIDTH] };
+    unordered_set<int> cleanClaims { };
 };
 
 int main()
 {
     auto start = chrono::high_resolution_clock::now();
 
-    FabricMapper<unsigned short, 1000, 1000> mapper;
+    FabricMapper<int, 1000, 1000> mapper;
 
     istream_iterator<Claim> claims (cin);
     for_each(claims, {}, [&](const Claim& claim) { mapper.addClaim(claim); });
 
     cout << mapper.conflicts() << " square inches of fabric are in conflict." << endl;
+    cout << "Claim with id = " << mapper.cleanClaim() << " has no conflict." << endl;
     
     auto end = chrono::high_resolution_clock::now();
     auto time = chrono::duration_cast<chrono::microseconds>(end - start);
