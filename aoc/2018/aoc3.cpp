@@ -1,6 +1,4 @@
 ﻿#include <iostream>
-#include <string>
-#include <sstream>
 #include <algorithm>
 #include <chrono>
 #include <unordered_set>
@@ -20,6 +18,7 @@ struct Claim
     unsigned width, length;
 };
 
+// regex is for the weak.
 class ClaimParser
 {
 public:
