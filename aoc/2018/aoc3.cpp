@@ -159,6 +159,7 @@ public:
             cleanClaims.insert(claim.id);
     }
 
+    // Returns how many square inches of fabric are in conflict.
     long long conflicts() const
     {  
         // count all the map cells that are marked as conflicting (-1)
@@ -167,6 +168,7 @@ public:
         });
     }
 
+    // Returns the ID of the claim that does not conflict with other claims.
     int cleanClaim() const
     {
         auto size = cleanClaims.size();
@@ -203,6 +205,7 @@ private:
         return false;
     }
 
+    // this will take about sizeof(T) megabytes of memory with a 1000x1000 map. use with care.
     multi_array<T, 2> map { extents[FABRIC_LENGTH][FABRIC_WIDTH] };
     unordered_set<int> cleanClaims { };
 };
