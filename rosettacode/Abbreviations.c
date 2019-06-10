@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
 #include <ctype.h>
 
 typedef char Command[16];
@@ -54,7 +53,7 @@ void add_command(Command command)
     last->next = newnode;
 }
 
-void load_commands()
+void load_commands(void)
 {
     FILE* file = fopen("input.txt", "r");
     Command command;
