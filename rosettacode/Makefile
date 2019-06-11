@@ -1,8 +1,6 @@
 include Makefile.targets
 
-all : $(PROGRAMS:.exe=)
-
 .PHONY : clean
 clean : 
-	rm -f *.o $(PROGRAMS:.exe=)
+	rm -f *.o $(SOURCES:.c=)
 
