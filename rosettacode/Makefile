@@ -1,6 +1,7 @@
-include Makefile.targets
+SOURCES= \
+	Abbreviations.c \
+	Aliquot_sequence_classifications.c \
+	Proper_divisors.c
 
-.PHONY : clean
-clean : 
-	rm -f *.o $(SOURCES:.c=)
+all : $(SOURCES:.c=$(SUFFIX))
 
