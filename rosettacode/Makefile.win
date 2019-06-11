@@ -1,0 +1,8 @@
+!include Makefile.targets
+
+all : $(PROGRAMS)
+
+.PHONY : clean
+clean : 
+	del *.obj *.exe
+
