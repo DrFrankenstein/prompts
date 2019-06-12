@@ -1,6 +1,6 @@
 SUFFIX=.exe
 
-!include Makefile.targets
+!include Makefile
 
 .PHONY : clean
 clean : 
