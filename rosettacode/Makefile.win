@@ -1,6 +1,6 @@
-!include Makefile.targets
+SUFFIX=.exe
 
-all : $(PROGRAMS)
+!include Makefile.targets
 
 .PHONY : clean
 clean : 
