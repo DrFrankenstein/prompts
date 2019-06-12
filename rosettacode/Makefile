@@ -3,5 +3,5 @@ SOURCES= \
 	Aliquot_sequence_classifications.c \
 	Proper_divisors.c
 
-all : $(SOURCES:.c=$(SUFFIX))
-
+PROGRAMS=$(SOURCES:.c=)
+PROGRAMS_EXE=$(SOURCES:.c=.exe)

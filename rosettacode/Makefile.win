@@ -2,7 +2,8 @@ SUFFIX=.exe
 
 !include Makefile
 
+all : $(PROGRAMS_EXE)
+
 .PHONY : clean
 clean : 
 	del *.obj *.exe
-

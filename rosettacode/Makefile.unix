@@ -1,6 +1,4 @@
-SUFFIX=
-
-include Makefile
+all : $(PROGRAMS)
 
 .PHONY : clean
 clean : 
@@ -12,4 +10,3 @@ Aliquot_sequence_classifications : Aliquot_sequence_classifications.c
 
 Proper_divisors : Proper_divisors.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< -lm
-
