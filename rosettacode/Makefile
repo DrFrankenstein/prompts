@@ -1,5 +1,8 @@
 SOURCES= \
+	100_doors.c \
+	24_Game.c \
 	Abbreviations.c \
+	Abundant,_deficient_and_perfect_number_classifications.c \
 	Aliquot_sequence_classifications.c \
 	Proper_divisors.c
 
