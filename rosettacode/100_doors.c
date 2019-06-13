@@ -1,6 +1,7 @@
-#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+typedef unsigned char uint8_t;
 
 void print_doors(uint8_t doors[])
 {
