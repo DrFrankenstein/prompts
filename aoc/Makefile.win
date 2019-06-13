@@ -1,0 +1,2 @@
+VARIANT=win
+!include Makefile.targets

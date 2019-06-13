@@ -1,0 +1,17 @@
+﻿/aoc/.vs/aoc
+/aoc/Debug
+/aoc/2016/aoc11.c
+/aoc/2016
+/aoc/2015/aoc7/aoc7.c
+/aoc/x64
+*.psess
+*.sln
+*.db
+*.vcxproj
+*.filters
+*.user
+*.vspx
+*.txt
+
+.vs/
+.vscode/

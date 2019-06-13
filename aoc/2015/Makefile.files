@@ -1,0 +1,9 @@
+SOURCES= \
+	aoc1.c \
+	aoc2.c \
+	aoc4.c \
+	aoc5.c \
+	aoc6.c \
+	aoc8.c \
+	aoc9.c \
+	aoc10.c \
