@@ -1,0 +1,7 @@
+PROGRAMS=$(SOURCES:.c=.exe)
+
+all : $(PROGRAMS)
+
+.PHONY : clean
+clean : 
+	del *.obj *.exe

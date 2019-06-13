@@ -1,0 +1,2 @@
+!include Makefile.targets
+!include ..\..\Makefile.win.base
