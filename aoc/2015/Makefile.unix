@@ -1,7 +1,2 @@
-include Makefile
-
-all : $(PROGRAMS)
-
-.PHONY : clean
-clean : 
-	rm -f *.o $(PROGRAMS)
+include Makefile.targets
+include ../../Makefile.unix.base

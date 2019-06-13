@@ -1,10 +1,5 @@
 include Makefile
-
-all : $(PROGRAMS)
-
-.PHONY : clean
-clean : 
-	rm -f *.o $(PROGRAMS)
+include ../Makefile.unix.base
 
 # Those depend on libm
 Aliquot_sequence_classifications : Aliquot_sequence_classifications.c

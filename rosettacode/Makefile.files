@@ -5,6 +5,3 @@ SOURCES= \
 	Abundant,_deficient_and_perfect_number_classifications.c \
 	Aliquot_sequence_classifications.c \
 	Proper_divisors.c
-
-PROGRAMS=$(SOURCES:.c=)
-PROGRAMS_EXE=$(SOURCES:.c=.exe)

@@ -7,6 +7,3 @@ SOURCES= \
 	aoc8.c \
 	aoc9.c \
 	aoc10.c \
-
-PROGRAMS=$(SOURCES:.c=)
-PROGRAMS_EXE=$(SOURCES:.c=.exe)
