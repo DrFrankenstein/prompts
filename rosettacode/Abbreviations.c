@@ -91,6 +91,9 @@ struct CommandNode* find_command(Command command)
 
         if (match_len)
         {
+            if (match_len == strlen(node->command))
+                return node;    // exact match
+
             if (match_len == best_match_len)
                 return NULL;    // ambiguous
 
