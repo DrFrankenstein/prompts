@@ -13,6 +13,19 @@ struct CommandNode
 
 struct CommandNode* commands = NULL;
 
+int strcmp_ci(const char* left, const char* right)
+{
+    do
+    {
+        int diff = tolower(*right) - tolower(*left);
+
+        if (diff)
+            return diff;
+    } while (*left++&&* right++);
+
+    return 0;
+}
+
 void add_command(Command command)
 {
     struct CommandNode* newnode = calloc(1, sizeof *newnode);
@@ -33,7 +46,7 @@ void add_command(Command command)
 
     while (node)
     {
-        if (strcmpi(command, node->command) < 0)
+        if (strcmp_ci(command, node->command) < 0)
         {   // splice before 'node'
             newnode->next = node;
 
@@ -105,7 +118,7 @@ struct CommandNode* find_command(Command command)
         }
         else
         {
-            if (strcmpi(command, node->command) < 0)
+            if (strcmp_ci(command, node->command) < 0)
                 // we've gone past where it would be
                 break;
         }
@@ -123,7 +136,7 @@ int main(void)
     while (!feof(stdin))
     {
         Command command;
-        scanf(" %15s", command);
+        (void) scanf(" %15s", command);
 
         struct CommandNode* node = find_command(command);
         if (node)
