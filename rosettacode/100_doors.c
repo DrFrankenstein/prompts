@@ -1,12 +1,13 @@
-#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+typedef unsigned char uint8_t;
 
 void print_doors(uint8_t doors[])
 {
     uint8_t door;
     for (door = 0; door < 100; door++)
-        printf("Door #%hhu: %s\n", door + 1, doors[door]? "open" : "closed");
+        printf("Door #%u: %s\n", (unsigned) door + 1, doors[door]? "open" : "closed");
 }
 
 void doors(void)
