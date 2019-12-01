@@ -34,7 +34,6 @@
              at end exit paragraph.
 
            move function numval(mass) to curr-mass.
-      *    display 'mass ' curr-mass.
            
            perform until curr-mass is <= 0
                compute curr-fuel = curr-mass / 3 - 2
@@ -44,9 +43,4 @@
                end-if
                
                move curr-fuel to curr-mass
-
-      *        display 
-      *          ' fuel ' curr-fuel
-      *          ' total ' total-fuel
-      *        end-display
            end-perform.
