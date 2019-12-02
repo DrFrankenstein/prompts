@@ -19,7 +19,7 @@ static IntCode read_integer(FILE* image)
 
 	if (status < 1)
 	{
-		fprintf(stderr, "unexpected character '%c' at position %ld\n", (char)getc(image), ftell(image));
+		fprintf(stderr, "unexpected character '%c' at position %ld\n", getc(image), ftell(image));
 		exit(1);
 	}
 
@@ -27,7 +27,7 @@ static IntCode read_integer(FILE* image)
 
 	if (comma != ',' && comma != EOF)
 	{
-		fprintf(stderr, "expected ',' but got '%c' at position %ld\n", (char)comma, ftell(image));
+		fprintf(stderr, "expected ',' but got '%c' at position %ld\n", comma, ftell(image));
 		exit(1);
 	}
 
@@ -74,8 +74,8 @@ static void add(IntCode* mem, size_t pc)
 	IntCode arg1 = mem[pc + 1], 
 		arg2 = mem[pc + 2], 
 		to = mem[pc + 3];
-	printf("%08zu ADD %"IC"(%"IC"),%"IC"(%"IC"),%"IC"\n",
-		pc, arg1, mem[arg1], arg2, mem[arg2], to);
+	//printf("%08zu ADD %"IC"(%"IC"),%"IC"(%"IC"),%"IC"\n",
+	//	pc, arg1, mem[arg1], arg2, mem[arg2], to);
 
 	mem[to] = mem[arg1] + mem[arg2];
 }
@@ -85,8 +85,8 @@ static void mul(IntCode* mem, size_t pc)
 	IntCode arg1 = mem[pc + 1], 
 		arg2 = mem[pc + 2], 
 		to = mem[pc + 3];
-	printf("%08zu MUL %"IC"(%"IC"),%"IC"(%"IC"),%"IC"\n",
-		pc, arg1, mem[arg1], arg2, mem[arg2], to);
+	//printf("%08zu MUL %"IC"(%"IC"),%"IC"(%"IC"),%"IC"\n",
+	//	pc, arg1, mem[arg1], arg2, mem[arg2], to);
 
 	mem[to] = mem[arg1] * mem[arg2];
 }
@@ -105,11 +105,11 @@ static bool step(IntCode* mem, size_t pc)
 		return true;
 
 	case HALT:
-		printf("%08zu HALT\n", pc);
+	//	printf("%08zu HALT\n", pc);
 		return false;
 
 	default:
-		printf("%08zu ??? (%"IC")\n", pc, code);
+	//	printf("%08zu ??? (%"IC")\n", pc, code);
 		exit(1);
 	}
 }
