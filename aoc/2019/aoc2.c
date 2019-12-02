@@ -8,8 +8,8 @@ enum Opcode { ADD = 1, MUL = 2, HALT = 99 };
 
 static IntCode read_integer(FILE* image)
 {
-	int integer;
-	int status = fscanf(image, " %d ", &integer);
+	IntCode integer;
+	int status = fscanf(image, " %"IC" ", &integer);
 
 	if (status == EOF)
 	{
