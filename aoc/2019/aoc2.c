@@ -69,60 +69,60 @@ static size_t read_image(FILE* image, IntCode** data)
 	return size;
 }
 
-static void add(IntCode* mem, size_t pc)
+static void add(IntCode* mem, size_t ip)
 {
-	IntCode arg1 = mem[pc + 1], 
-		arg2 = mem[pc + 2], 
-		to = mem[pc + 3];
+	IntCode p1 = mem[ip + 1], 
+		p2 = mem[ip + 2], 
+		to = mem[ip + 3];
 	//printf("%08zu ADD %"IC"(%"IC"),%"IC"(%"IC"),%"IC"\n",
-	//	pc, arg1, mem[arg1], arg2, mem[arg2], to);
+	//	ip, p1, mem[p1], p2, mem[p2], to);
 
-	mem[to] = mem[arg1] + mem[arg2];
+	mem[to] = mem[p1] + mem[p2];
 }
 
-static void mul(IntCode* mem, size_t pc)
+static void mul(IntCode* mem, size_t ip)
 {
-	IntCode arg1 = mem[pc + 1], 
-		arg2 = mem[pc + 2], 
-		to = mem[pc + 3];
+	IntCode p1 = mem[ip + 1], 
+		p2 = mem[ip + 2], 
+		to = mem[ip + 3];
 	//printf("%08zu MUL %"IC"(%"IC"),%"IC"(%"IC"),%"IC"\n",
-	//	pc, arg1, mem[arg1], arg2, mem[arg2], to);
+	//	ip, p1, mem[p1], p2, mem[p2], to);
 
-	mem[to] = mem[arg1] * mem[arg2];
+	mem[to] = mem[p1] * mem[p2];
 }
 
-static bool step(IntCode* mem, size_t pc)
+static bool step(IntCode* mem, size_t ip)
 {
-	IntCode code = mem[pc];
+	IntCode code = mem[ip];
 	switch (code)
 	{
 	case ADD:
-		add(mem, pc);
+		add(mem, ip);
 		return true;
 
 	case MUL:
-		mul(mem, pc);
+		mul(mem, ip);
 		return true;
 
 	case HALT:
-	//	printf("%08zu HALT\n", pc);
+	//	printf("%08zu HALT\n", ip);
 		return false;
 
 	default:
-	//	printf("%08zu ??? (%"IC")\n", pc, code);
+	//	printf("%08zu ??? (%"IC")\n", ip, code);
 		exit(1);
 	}
 }
 
 static void run(IntCode* mem, size_t size)
 {
-	size_t pc = 0;
-	while (step(mem, pc))
+	size_t ip = 0;
+	while (step(mem, ip))
 	{
-		pc += 4;
-		if (pc >= size)
+		ip += 4;
+		if (ip >= size)
 		{
-			fprintf(stderr, "%08zu !!! out of bounds\n", pc);
+			fprintf(stderr, "%08zu !!! out of bounds\n", ip);
 			exit(1);
 		}
 	}
