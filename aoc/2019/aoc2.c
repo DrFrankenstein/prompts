@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 typedef unsigned int IntCode;
 #define IC "u"
@@ -128,15 +129,42 @@ static void run(IntCode* mem, size_t size)
 	}
 }
 
-int main(void)
+static IntCode run_with_params(IntCode* initmem, size_t size, IntCode noun, IntCode verb)
 {
-	IntCode* mem;
-	size_t size = read_image(stdin, &mem);
+	IntCode* mem = calloc(size, sizeof *initmem);
+	if (!mem)
+	{
+		perror("cannot create an IntCode computer");
+		exit(1);
+	}
 
-	mem[1] = 12;
-	mem[2] = 2;
+	memcpy(mem, initmem, size * sizeof *mem);
+	mem[1] = noun;
+	mem[2] = verb;
 
 	run(mem, size);
 
-	printf("00000000 = %"IC"\n", mem[0]);
+	IntCode result = mem[0];
+	free(mem);
+	return result;
+}
+
+int main(void)
+{
+	IntCode* initmem;
+	size_t size = read_image(stdin, &initmem);
+
+	for (IntCode noun = 0; noun < 100; ++noun)
+		for (IntCode verb = 0; verb < 100; ++verb)
+		{
+			IntCode result = run_with_params(initmem, size, noun, verb);
+			if (result == 19690720)
+			{
+				printf("noun = %"IC", verb = %"IC", result = %"IC"\n", noun, verb, 100 * noun + verb);
+				return 0;
+			}
+		}
+
+	puts("not found");
+	return 1;
 }
