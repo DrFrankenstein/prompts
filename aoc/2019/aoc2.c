@@ -3,27 +3,32 @@
 #include <stdbool.h>
 #include <string.h>
 
-typedef unsigned int IntCode;
-#define IC "u"
-enum Opcode { ADD = 1, MUL = 2, HALT = 99 };
+typedef unsigned int IntCode;                 // the type of the elements in the machine's memory; in other words, an IntCode "byte"
+#define IC "u"                                // the printf/scanf specifier that goes with IntCode
+enum Opcode { ADD = 1, MUL = 2, HALT = 99 };  // names for the IntCode opcodes
 
+// reads one integer from 'image', followed by a comma or EOF.
 static IntCode read_integer(FILE* image)
 {
 	IntCode integer;
+
+	// read a number, possibly surrounded by whitespace.
+	// there _is_ whitespace in one case in the input file: the final line return
 	int status = fscanf(image, " %"IC" ", &integer);
 
 	if (status == EOF)
-	{
+	{	// failed to read anything from the file
 		perror("unexpected end-of-file or stream error");
 		exit(1);
 	}
 
 	if (status < 1)
-	{
+	{	// it wasn't a number
 		fprintf(stderr, "unexpected character '%c' at position %ld\n", getc(image), ftell(image));
 		exit(1);
 	}
 
+	// number should be followed by a comma or EOF
 	int comma = getc(image);
 
 	if (comma != ',' && comma != EOF)
@@ -35,10 +40,12 @@ static IntCode read_integer(FILE* image)
 	return integer;
 }
 
+// appends an integer to the memory, resizing the array to accomodate if needed
 static IntCode* append_integer(IntCode* mem, IntCode integer, size_t size, size_t* capacity)
 {
 	if (size == *capacity)
-	{
+	{	// memory is too small, buy more!
+		// we increment by 4 so that we don't have to do it every time.
 		*capacity += 4;
 		IntCode* newmem = realloc(mem, *capacity * sizeof * mem);
 		if (!newmem)
@@ -55,7 +62,8 @@ static IntCode* append_integer(IntCode* mem, IntCode integer, size_t size, size_
 	return mem;
 }
 
-static size_t read_image(FILE* image, IntCode** data)
+// reads a memory image file (the input file) into the memory
+static IntCode* read_image(FILE* image, size_t* sizeref)
 {
 	size_t size = 0, capacity = 0;
 	IntCode* mem = NULL;
@@ -66,10 +74,11 @@ static size_t read_image(FILE* image, IntCode** data)
 		mem = append_integer(mem, integer, size++, &capacity);
 	}
 
-	*data = mem;
-	return size;
+	*sizeref = size;
+	return mem;
 }
 
+// the 'add' opcode
 static void add(IntCode* mem, size_t ip)
 {
 	IntCode p1 = mem[ip + 1], 
@@ -81,6 +90,7 @@ static void add(IntCode* mem, size_t ip)
 	mem[to] = mem[p1] + mem[p2];
 }
 
+// the 'multiply' opcode
 static void mul(IntCode* mem, size_t ip)
 {
 	IntCode p1 = mem[ip + 1], 
@@ -92,6 +102,7 @@ static void mul(IntCode* mem, size_t ip)
 	mem[to] = mem[p1] * mem[p2];
 }
 
+// runs one instruction; returns false on halt
 static bool step(IntCode* mem, size_t ip)
 {
 	IntCode code = mem[ip];
@@ -110,11 +121,12 @@ static bool step(IntCode* mem, size_t ip)
 		return false;
 
 	default:
-	//	printf("%08zu ??? (%"IC")\n", ip, code);
+		printf("%08zu ??? (%"IC")\n", ip, code);	// invalid instruction
 		exit(1);
 	}
 }
 
+// runs the IntCode machine until halt or memory overrun
 static void run(IntCode* mem, size_t size)
 {
 	size_t ip = 0;
@@ -129,8 +141,9 @@ static void run(IntCode* mem, size_t size)
 	}
 }
 
+// creates and runs an IntCode machine with 'noun' and 'verb' params set
 static IntCode run_with_params(IntCode* initmem, size_t size, IntCode noun, IntCode verb)
-{
+{	// we create a copy of the memory so that we don't clobber anything between reruns
 	IntCode* mem = calloc(size, sizeof *initmem);
 	if (!mem)
 	{
@@ -151,8 +164,8 @@ static IntCode run_with_params(IntCode* initmem, size_t size, IntCode noun, IntC
 
 int main(void)
 {
-	IntCode* initmem;
-	size_t size = read_image(stdin, &initmem);
+	size_t size;
+	IntCode* initmem = read_image(stdin, &size);
 
 	for (IntCode noun = 0; noun < 100; ++noun)
 		for (IntCode verb = 0; verb < 100; ++verb)
