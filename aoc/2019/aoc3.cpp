@@ -76,7 +76,7 @@ private:
 
 	void readCommand()
 	{
-		if (!_input)
+		if (_input == nullptr)
 			return;
 
 		char c;
