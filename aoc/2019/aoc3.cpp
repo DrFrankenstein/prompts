@@ -49,7 +49,7 @@ struct Command
 };
 
 class CommandIterator 
-	: public iterator_facade<CommandIterator, Command const, boost::forward_traversal_tag>
+	: public iterator_facade<CommandIterator, Command const, forward_traversal_tag>
 {
 public:
 	CommandIterator() :_input(nullptr) { }
