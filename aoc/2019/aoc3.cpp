@@ -14,9 +14,9 @@
 
 using std::abs, std::back_inserter, std::cin, std::cout, std::end, std::endl,
 	std::istream, std::list, std::make_signed, std::noskipws, std::runtime_error,
-	std::size_t, std::unordered_map;
+	std::size_t, std::skipws, std::unordered_map;
 using boost::forward_traversal_tag, boost::iterator_core_access, boost::iterator_facade;
-using boost::iterator_range, boost::min_element, boost::adaptors::transformed;
+using boost::make_iterator_range, boost::min_element, boost::adaptors::transformed;
 using boost::hash, boost::hash_combine;
 
 using Distance = unsigned int;
@@ -191,7 +191,7 @@ int main()
 	while (!cin.eof())
 	{
 		CommandIterator commands{ cin };
-		finder.addWire(iterator_range<CommandIterator>(commands, CommandIterator{}));
+		finder.addWire(make_iterator_range(commands, {}));
 	}
 
 	auto distances = crossings | transformed([](auto crossing) { return distanceTo({ 0, 0 }, crossing); });
