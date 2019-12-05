@@ -9,12 +9,12 @@
 #include <boost/functional/hash.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/range.hpp>
-#include <boost/range/algorithm/min_element.hpp>
 #include <boost/range/adaptor/transformed.hpp>
+#include <boost/range/algorithm/min_element.hpp>
 
 using std::abs, std::back_inserter, std::cin, std::cout, std::end, std::endl,
 	std::istream, std::list, std::make_signed, std::noskipws, std::runtime_error,
-	std::size_t, std::skipws, std::unordered_map;
+	std::size_t, std::unordered_map;
 using boost::forward_traversal_tag, boost::iterator_core_access, boost::iterator_facade;
 using boost::make_iterator_range, boost::min_element, boost::adaptors::transformed;
 using boost::hash, boost::hash_combine;
@@ -33,7 +33,7 @@ struct Position
 
 	friend size_t hash_value(const Position& position)
 	{
-		size_t hash;
+		size_t hash = 0;
 		hash_combine(hash, position.x);
 		hash_combine(hash, position.y);
 
@@ -52,8 +52,8 @@ class CommandIterator
 	: public iterator_facade<CommandIterator, Command const, forward_traversal_tag>
 {
 public:
-	CommandIterator() :_input(nullptr) { }
-	CommandIterator(istream& input) :_input(&input)
+	CommandIterator() = default;
+	explicit CommandIterator(istream& input) : _input(&input)
 	{
 		readCommand();
 	}
@@ -93,17 +93,17 @@ private:
 		*_input >> _command.distance;
 	}
 
-	bool equal(CommandIterator const& other) const
+	[[nodiscard]] bool equal(CommandIterator const& other) const
 	{
 		return _input == other._input;
 	}
 
-	const Command& dereference() const
+	[[nodiscard]] const Command& dereference() const
 	{
 		return _command;
 	}
 
-	istream* _input;
+	istream* _input { nullptr };
 	Command _command {Direction::UP, 0};
 };
 
@@ -111,7 +111,7 @@ template <typename CrossingsIterator>
 class CrossingFinder
 {
 public:
-	CrossingFinder(CrossingsIterator& inserter)
+	explicit CrossingFinder(CrossingsIterator& inserter)
 		: _crossings(inserter)
 	{ }
 
