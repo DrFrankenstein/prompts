@@ -14,7 +14,7 @@
  * - An array, which we then walk in search of a matching command.
  *   Optionally, the array can be sorted to moderately speed up searches.
  *
- * - A linked list, which we also talk through.
+ * - A linked list, which we also walk through.
  *   It can also be kept sorted. In that case, insertions are actually faster, since we can just
  *   splice the command in.
  *   (this is how the first iteration of this was done.)
