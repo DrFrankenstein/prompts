@@ -2,9 +2,9 @@
 #include <exception>
 #include <iostream>
 #include <iterator>
-#include <list>
 #include <type_traits>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <boost/functional/hash.hpp>
 #include <boost/iterator/iterator_facade.hpp>
@@ -12,16 +12,14 @@
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/algorithm/min_element.hpp>
 
-using std::abs, std::back_inserter, std::cin, std::cout, std::end, std::endl,
-	std::istream, std::list, std::make_signed, std::noskipws, std::runtime_error,
-	std::size_t, std::unordered_map;
+using std::abs, std::cin, std::cout, std::end, std::endl,
+	std::istream, std::noskipws, std::runtime_error,
+	std::size_t, std::unordered_map, std::unordered_set;
 using boost::forward_traversal_tag, boost::iterator_core_access, boost::iterator_facade;
 using boost::make_iterator_range, boost::min_element, boost::adaptors::transformed;
 using boost::hash, boost::hash_combine;
 
-using Distance = unsigned int;
-using Wire = unsigned char;
-
+using Distance = int;
 struct Position
 {
 	Distance x, y;
@@ -39,6 +37,19 @@ struct Position
 
 		return hash;
 	}
+};
+
+using Wire = unsigned char;
+struct Trace
+{
+	Wire wire;
+	Distance distance;
+};
+
+struct Crossing
+{
+	Position position;
+	Distance combinedDistances;
 };
 
 enum class Direction : char { UP = 'U', DOWN = 'D', LEFT = 'L', RIGHT = 'R' };
@@ -107,22 +118,28 @@ private:
 	Command _command {Direction::UP, 0};
 };
 
-template <typename CrossingsIterator>
 class CrossingFinder
 {
 public:
-	explicit CrossingFinder(CrossingsIterator& inserter)
-		: _crossings(inserter)
-	{ }
+	CrossingFinder() = default;
 
 	template<typename Range>
 	void addWire(Range commandRange)
 	{
 		++_currentWire;
+		_currentDistance = 0;
 
 		Position position { 0, 0 };
 		for (const auto& command : commandRange)
 			walk(position, command);
+	}
+
+	[[nodiscard]] auto crossings() const
+	{
+		return _crossings | transformed([this](auto position) {
+			auto trace = _traces.at(position);
+			return Crossing { position, trace.distance };
+		});
 	}
 
 private:
@@ -154,48 +171,61 @@ private:
 		}
 
 		if (isCrossing(position))
-			*_crossings++ = position;
-
-		_traces.insert({ position, _currentWire });
+		{
+			_crossings.insert(position);
+			auto& trace = _traces.at(position);
+			trace.distance += ++_currentDistance;
+		}
+		else
+			_traces.insert({ position, { _currentWire, ++_currentDistance } });
 	}
 
 	bool isCrossing(const Position& position)
 	{
 		auto crossing = _traces.find(position);
-		return crossing != end(_traces) && crossing->second != _currentWire;
+		
+		if (crossing == end(_traces))
+			return false;
+
+		auto& trace = crossing->second;
+		return trace.wire != _currentWire;
 	}
 
-	using Traces = unordered_map<Position, Wire, hash<Position>>;
+	using Crossings = unordered_set<Position, hash<Position>>;
+	using Traces = unordered_map<Position, Trace, hash<Position>>;
 
-	CrossingsIterator& _crossings;
+	Crossings _crossings;
 	Traces _traces {};
 	Wire _currentWire = 0;
+	Distance _currentDistance = 0;
 };
 
 Distance distanceTo(const Position& origin, const Position& destination)
 {
-	using DistanceDiff = make_signed<Distance>::type;
-	DistanceDiff dx = origin.x - destination.x,
-	             dy = origin.y - destination.y;
+	Distance dx = origin.x - destination.x,
+	         dy = origin.y - destination.y;
 
 	return abs(dx) + abs(dy);
 }
 
 int main()
 {
-	list<Position> crossings;
+	CrossingFinder finder{};
 
-	auto inserter = back_inserter(crossings);
-	CrossingFinder finder { inserter };
-	
 	while (!cin.eof())
 	{
 		CommandIterator commands{ cin };
 		finder.addWire(make_iterator_range(commands, {}));
 	}
 
-	auto distances = crossings | transformed([](auto crossing) { return distanceTo({ 0, 0 }, crossing); });
-	auto minDistance = *min_element(distances);
+	auto crossings = finder.crossings();
+	auto distancesFromOrigin = crossings | transformed([](auto crossing) { return distanceTo({ 0, 0 }, crossing.position); });
+	auto minDistance = *min_element(distancesFromOrigin);
 
 	cout << "Closest crossing is at " << minDistance << endl;
+
+	auto distancesAtCrossing = crossings | transformed([](auto crossing) { return crossing.combinedDistances; });
+	auto minCombinedDistance = *min_element(distancesAtCrossing);
+	
+	cout << "Fastest crossing is at " << minCombinedDistance << endl;
 }
