@@ -16,14 +16,14 @@
        01 number-string redefines the-number.
           05 digits pic 9 occurs 6 times.
 
-       77 lower-bound   pic 9(6) value 367479.
-       77 upper-bound   pic 9(6) value 893698.
+       77 lower-bound   pic 9(6).
+       77 upper-bound   pic 9(6).
 
        77 idx           pic 9.
        77 digit         pic 9.
 
        77 good-count    pic 9(6) value 0.
-       77 good-count-disp pic Z(6).
+       77 good-count-disp pic ZZZZZ9.
 
        77 number-status pic 9.
           88 good value 1.
@@ -31,6 +31,16 @@
 
        procedure division.
        solve.
+           accept lower-bound from argument-value.
+           accept upper-bound from argument-value.
+
+           if lower-bound = 0 and upper-bound = 0
+             or lower-bound > upper-bound then
+               display 'usage: aoc4 <lower-bound> <upper-bound>'
+               display ' e.g.: aoc4 123456 456789'
+               stop run
+           end-if
+
            perform varying the-number 
              from lower-bound by 1
              until the-number >= upper-bound
