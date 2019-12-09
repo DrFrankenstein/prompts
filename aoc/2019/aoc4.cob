@@ -29,12 +29,6 @@
                perform check-increasing
                perform check-repeating
 
-               if good then
-                   display the-number ' good'
-               else
-                   display the-number ' bad'
-               end-if
-
                if good and the-number < upper-bound then
                    add 1 to good-count
                end-if
