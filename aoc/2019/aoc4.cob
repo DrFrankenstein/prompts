@@ -29,6 +29,12 @@
                perform check-increasing
                perform check-repeating
 
+               if good then
+                   display the-number ' good'
+               else
+                   display the-number ' bad'
+               end-if
+
                if good and the-number < upper-bound then
                    add 1 to good-count
                end-if
@@ -58,8 +64,15 @@
 
            perform varying idx from 2 by 1 until idx > 6
                if digits(idx) = digits(idx - 1) then
-                   move 1 to number-status
-                   exit paragraph
+                   if idx = 6 or digits(idx) not = digits(idx + 1) then
+                      move 1 to number-status
+                      exit paragraph
+                   else
+                       move digits(idx) to digit
+                       perform until idx > 6 or digits(idx) not = digit
+                           add 1 to idx
+                       end-perform
+                   end-if
                end-if
            end-perform.
            
