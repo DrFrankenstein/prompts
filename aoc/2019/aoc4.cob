@@ -84,7 +84,7 @@
       *          * current digit same as previous
 
                    if idx = 6 or digits(idx) not = digits(idx + 1) then
-      *             * next digit different from next, or at end (good)
+      *             * next digit different from current or at end (good)
                       move 1 to number-status
                       exit paragraph
                    else
