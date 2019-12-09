@@ -31,6 +31,10 @@
 
        procedure division.
        solve.
+      * if you want to be a true mainframer and run this on z/OS, i, or
+      * something of the sort, you might need to change these accepts.
+      * I'm assuming the common case of running this on a toy computer
+      * with MicroFocus or GnuCOBOL.
            accept lower-bound from argument-value.
            accept upper-bound from argument-value.
 
