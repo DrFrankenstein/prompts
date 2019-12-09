@@ -56,6 +56,10 @@
            end-perform.
 
        fixup.
+      * we found a decreasing digit, so we're going to replace it and
+      * all the following digits by the one before it, effectively
+      * skipping an entire range of invalid numbers
+      * e.g. 123210 -> 123333
            move digits(idx - 1) to digit.
            perform until idx > 6
                move digit to digits(idx)
