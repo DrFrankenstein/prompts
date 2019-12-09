@@ -1,6 +1,15 @@
        identification division.
        program-id. aoc4.
 
+      * We're going to use an interesting property of COBOL, which is
+      * that it encodes numbers in decimal by default (instead of
+      * binary). Because of that, we can redefine our 'the-number' 
+      * variable as an array of 6 'digits' and address each individual
+      * digit without doing any kind of conversion. 
+      
+      * The 'redefines' clause reinterprets an existing variable as a
+      * different data type (pic).
+
        data division.
        working-storage section.
        01 the-number    pic 9(6).
@@ -58,10 +67,14 @@
 
            perform varying idx from 2 by 1 until idx > 6
                if digits(idx) = digits(idx - 1) then
+      *          * current digit same as previous
+
                    if idx = 6 or digits(idx) not = digits(idx + 1) then
+      *             * next digit different from next, or at end (good)
                       move 1 to number-status
                       exit paragraph
                    else
+      *              * 3 or more consecutive digits (bad); skip them
                        move digits(idx) to digit
                        perform until idx > 6 or digits(idx) not = digit
                            add 1 to idx
