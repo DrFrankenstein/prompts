@@ -2,8 +2,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdarg.h>
 
-typedef int IntCode;  // the type of the elements in the machine's memory; in other words, an IntCode "byte"
+#define DISASM 0      // if set to 1, turns on disassembly output
+
+typedef int IntCode;  // an IntCode computer word
 #define IC "d"        // the printf/scanf specifier that goes with IntCode
 
 enum Opcode
@@ -15,14 +18,22 @@ enum Opcode
 	HALT = 99
 };
 
-struct Computer
-{
-	size_t ip;
-	size_t memsize;
-	IntCode* mem;
-	bool running;
+enum ParamMode
+{	// names for the instruction parameter modes
+	MEMORY = 0,
+	IMMEDIATE = 1
 };
 
+struct Computer
+{
+	size_t ip;       // instruction pointer
+	size_t memsize;  // size of the memory
+	IntCode* mem;    // memory
+	IntCode opcode;  // opcode register
+	bool running;    // running/idle flag
+};
+
+#pragma region Image file parser //////////////////////////////////////////////////////////////////
 // reads one integer from 'image', followed by a comma or EOF.
 static IntCode read_integer(FILE* image)
 {
@@ -93,68 +104,168 @@ static IntCode* read_image(FILE* image, size_t* sizeref)
 	*sizeref = size;
 	return mem;
 }
+#pragma endregion
 
+#pragma region Disassembler ///////////////////////////////////////////////////////////////////////
+static void disasm_vout(const char* format, va_list args)
+{
+#if DISASM
+		vprintf(format, args);
+#endif
+}
+
+static void disasm_out(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+
+	disasm_vout(format, args);
+
+	va_end(args);
+}
+
+static bool disasm_first_param = false;
+static void disasm_ip(struct Computer* computer)
+{
+	disasm_out("%08zu ", computer->ip);
+}
+
+static void disasm_op(const char* mnemonic)
+{
+	disasm_out("%-4s", mnemonic);
+	disasm_first_param = true;
+}
+
+static void disasm_param(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+
+	disasm_out("%c", disasm_first_param ? ' ' : ',');
+	disasm_vout(format, args);
+
+	va_end(args);
+	disasm_first_param = false;
+}
+#pragma endregion
+
+#pragma region Param decoder + memory load/store //////////////////////////////////////////////////
+static IntCode consume(struct Computer* computer)
+{
+	if (computer->ip >= computer->memsize)
+	{
+		fprintf(stderr, "%08zu !!! ip out of bounds\n", computer->ip);
+		exit(1);
+	}
+
+	return computer->mem[computer->ip++];
+}
+
+static IntCode load(struct Computer* computer)
+{
+	IntCode ptr = consume(computer);
+	disasm_param("(%"IC")", ptr);
+	return computer->mem[ptr];
+}
+
+static void store(struct Computer* computer, const IntCode rvalue)
+{
+	IntCode ptr = consume(computer);
+	disasm_param("(%"IC") = %"IC, ptr, rvalue);
+	computer->mem[ptr] = rvalue;
+}
+
+static IntCode immediate(struct Computer* computer)
+{
+	IntCode val = consume(computer);
+	disasm_param("%"IC, val);
+	return val;
+}
+
+static IntCode decode_param(struct Computer* computer, unsigned idx)
+{
+	IntCode mode = computer->opcode / 100;
+	while (idx--) mode /= 10;
+	mode %= 10;
+
+	switch (mode)
+	{
+	case IMMEDIATE: return immediate(computer);
+	case MEMORY: return load(computer);
+
+	default:
+		disasm_param("%s", "???");
+		printf("illegal parameter mode %"IC"\n", mode);
+		exit(1);
+	}
+}
+#pragma endregion
+
+#pragma region Arithmetic and logic unit //////////////////////////////////////////////////////////
 // the 'add' opcode
 static void add(struct Computer* computer)
 {
-	IntCode p1 = computer->mem[computer->ip + 1],
-		p2 = computer->mem[computer->ip + 2],
-		to = computer->mem[computer->ip + 3];
-	//printf("%08zu ADD %"IC"(%"IC"),%"IC"(%"IC"),%"IC"\n",
-	//	ip, p1, mem[p1], p2, mem[p2], to);
-
-	computer->mem[to] = computer->mem[p1] + computer->mem[p2];
-	computer->ip += 4;
+	disasm_op("ADD");
+	IntCode lhs = decode_param(computer, 0);
+	IntCode rhs = decode_param(computer, 1);
+	store(computer, lhs + rhs);
 }
 
 // the 'multiply' opcode
 static void mul(struct Computer* computer)
 {
-	IntCode p1 = computer->mem[computer->ip + 1],
-		p2 = computer->mem[computer->ip + 2],
-		to = computer->mem[computer->ip + 3];
-	//printf("%08zu MUL %"IC"(%"IC"),%"IC"(%"IC"),%"IC"\n",
-	//	ip, p1, mem[p1], p2, mem[p2], to);
-
-	computer->mem[to] = computer->mem[p1] * computer->mem[p2];
-	computer->ip += 4;
+	disasm_op("MUL");
+	IntCode lhs = decode_param(computer, 0);
+	IntCode rhs = decode_param(computer, 1);
+	store(computer, lhs * rhs);
 }
 
 // the 'input' opcode
 static void in(struct Computer* computer)
 {
-	printf("Input requested at %zu: ", computer->ip);
+	disasm_op("IN");
+	disasm_out("%s", " ...\n");
+
+	printf("%s", "? ");
 	IntCode input;
 	int status;
 	do
 	{
 		status = scanf(" %"IC, &input);
+
+		if (status == EOF)
+		{
+			perror("error reading input");
+			exit(1);
+		}
 	} while (status < 1);
 
-	IntCode p1 = computer->mem[computer->ip + 1];
-	computer->mem[p1] = input;
+	disasm_out("%s", "  ... ");
 
-	computer->ip += 2;
+	store(computer, input);
 }
 
 static void out(struct Computer* computer)
 {
-	IntCode p1 = computer->mem[computer->ip + 1];
-	printf("(%08zu) %"IC"\n", computer->ip, computer->mem[p1]);
-
-	computer->ip += 2;
+	disasm_op("OUT");
+	printf("= %"IC"\n", load(computer));
 }
 
 static void halt(struct Computer* computer)
 {
+	disasm_op("HALT");
 	computer->running = false;
 }
+#pragma endregion
 
+#pragma region Main instruction decoder ///////////////////////////////////////////////////////////
 // runs one instruction; returns false on halt
 static void step(struct Computer* computer)
 {
-	IntCode code = computer->mem[computer->ip];
-	switch (code)
+	disasm_ip(computer);
+
+	computer->opcode = consume(computer);
+	switch (computer->opcode % 100)
 	{
 	case ADD:
 		add(computer);
@@ -174,15 +285,19 @@ static void step(struct Computer* computer)
 
 	case HALT:
 		halt(computer);
-		//	printf("%08zu HALT\n", ip);
 		break;
 
 	default:
-		printf("%08zu ??? (%"IC")\n", computer->ip, code);	// invalid instruction
+		disasm_op("???");
+		printf("illegal instruction %"IC"\n", computer->opcode);
 		exit(1);
 	}
-}
 
+	disasm_out("%c", '\n');
+}
+#pragma endregion
+
+#pragma region Clock generator ////////////////////////////////////////////////////////////////////
 // runs the IntCode machine until halt or memory overrun
 static void run(struct Computer* computer)
 {
@@ -191,13 +306,9 @@ static void run(struct Computer* computer)
 	while (computer->running)
 	{
 		step(computer);
-		if (computer->ip >= computer->memsize)
-		{
-			fprintf(stderr, "%08zu !!! out of bounds\n", computer->ip);
-			exit(1);
-		}
 	}
 }
+#pragma endregion
 
 // creates and runs an IntCode machine with 'noun' and 'verb' params set
 static IntCode run_with_params(IntCode* initmem, size_t size, IntCode noun, IntCode verb)
