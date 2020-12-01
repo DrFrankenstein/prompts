@@ -1,9 +1,0 @@
-include Makefile
-include ../Makefile.unix.base
-
-# Those depend on libm
-Aliquot_sequence_classifications : Aliquot_sequence_classifications.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< -lm
-
-Proper_divisors : Proper_divisors.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< -lm

@@ -1,8 +1,0 @@
-SUBDIRS = aoc rosettacode
-
-all : $(SUBDIRS)
-
-$(SUBDIRS) :
-	+cd $@
-	+$(MAKE) -f Makefile.$(VARIANT) $*
-	+cd ..

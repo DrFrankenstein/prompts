@@ -1,8 +1,0 @@
-SUBDIRS = 2015 2017
-
-all : $(SUBDIRS)
-
-$(SUBDIRS) :
-	+cd $@
-	+$(MAKE) -f Makefile.$(VARIANT) $*
-	+cd ..
