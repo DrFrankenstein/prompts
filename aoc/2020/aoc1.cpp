@@ -4,48 +4,76 @@
 #include <utility>
 #include <vector>
 
+#if __cpp_lib_ranges >= 201911L
+#include <ranges>
+#else
+#include "nanorange.hpp"
+#endif
+
 using std::back_inserter, std::copy, std::cin, std::cout,
       std::istream_iterator, std::pair, std::vector;
 
-template <typename Range, typename Func>
-void combinations(const Range& r, const Func& f)
-{
-    auto end = r.end();
+#if __cpp_lib_ranges >= 201911L
+using std::ranges::cbegin, std::ranges::cend, std::ranges::subrange;
+#else
+using nano::cbegin, nano::cend, nano::subrange;
+#endif
 
-    for (auto i = r.begin(); i != end - 1; ++i)
-        for (auto j = i + 1; j != end; ++j)
-        {
-            if(!f(*i, *j))
-                return;
-        }
+/** Generates k-combinations from a set, calling a functor for each.
+ * @param k       size of the subsets to generate
+ * @param set     set from which to take the subsets
+ * @param reducer function that accumulates elements into a subset
+ * @param functor function called with each complete subset
+ * @param value   optional starting value to pass to the reducer
+ *
+ * @remarks This function has a complexity of O(C(n, k)), but stops when 'functor' returns true.
+ */
+template <typename Range, typename Reducer, typename Functor, typename Value>
+void kcombinations(unsigned k, const Range& set, const Reducer& reducer, const Functor& functor, Value value = {})
+{
+	if (k == 0)
+		return; // no 0-subsets for you.
+
+	const auto end = cend(set);
+
+	for (auto i = cbegin(set); i != end; ++i)
+	{
+		if (k > 1)
+			kcombinations(k - 1, subrange(i + 1, end), reducer, functor, reducer(value, *i));
+		else
+			if (functor(reducer(value, *i)))
+				return;
+	}
 }
 
-template <typename Range, typename Value>
-pair<Value, Value> findPairMatching(const Range& r, const Value target)
+pair<int, int> addmul(pair<int, int> left, int right)
 {
-    pair<Value, Value> result;
-    combinations(r, 
-        [target,&result](const Value i, const Value j) {
-            if (i + j == target)
-            {
-                result = {i, j};
-                return false;
-            }
+	const auto [sum, product] = left;
+	return { sum + right, product * right };
+}
 
-            return true;
-        }
-    );
+bool check(pair<int, int> values)
+{
+	constexpr int target = 2020;
+	const auto [sum, product] = values;
+	if (sum == target)
+	{
+		cout << product << '\n';
+		return true;
+	}
 
-    return result;
+	return false;
 }
 
 int main()
 {
-    vector<int> values;
-    istream_iterator<int> in { cin };
-    copy(in, {}, back_inserter(values));
+	vector<int> entries;
+	istream_iterator<int> in { cin };
+	copy(in, {}, back_inserter(entries));
 
-    auto [i, j] = findPairMatching(values, 2020);
-
-    cout << i * j;
+	constexpr int target = 2020;
+	cout << "with 2 entries: ";
+	kcombinations(2, entries, addmul, check, pair{ 0, 1 });
+	cout << "with 3 entries: ";
+	kcombinations(3, entries, addmul, check, pair{ 0, 1 });
 }
