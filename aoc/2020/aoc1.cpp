@@ -71,7 +71,6 @@ int main()
 	istream_iterator<int> in { cin };
 	copy(in, {}, back_inserter(entries));
 
-	constexpr int target = 2020;
 	cout << "with 2 entries: ";
 	kcombinations(2, entries, addmul, check, pair{ 0, 1 });
 	cout << "with 3 entries: ";
