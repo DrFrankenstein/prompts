@@ -49,8 +49,8 @@ static bool check_password2(char* password, struct Policy* policy)
 {
 	assert(policy->low <= strlen(password) && policy->high <= strlen(password));
 
-	return password[policy->low - 1] == policy->letter
-	    != password[policy->high - 1] == policy->letter;
+	return (password[policy->low - 1] == policy->letter)
+	    != (password[policy->high - 1] == policy->letter);
 }
 
 static struct Results check_passwords(FILE* input)
