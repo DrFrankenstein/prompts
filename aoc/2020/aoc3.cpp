@@ -1,8 +1,27 @@
+#include <array>
+#include <functional>
 #include <iostream>
+#include <iterator>
+#include <numeric>
 #include <string>
+#include <utility>
 #include <vector>
 
-using std::cin, std::cout, std::getline, std::istream, std::size_t, std::string, std::vector;
+#if __cpp_lib_ranges >= 201911L
+#include <ranges>
+#else
+#include "nanorange.hpp"
+#endif
+
+using std::accumulate, std::array, std::begin, std::cin, std::cout, std::end, std::getline,
+      std::istream, std::multiplies, std::pair, std::size_t, std::string, std::vector;
+
+
+#if __cpp_lib_ranges >= 201911L
+using std::views::transform;
+#else
+using nano::views::transform;
+#endif
 
 class Map
 {
@@ -59,7 +78,6 @@ unsigned slideThrough(const Map& map, int dx, int dy)
 		if (map(x, y))
 			++treeCount;
 
-
 	return treeCount;
 }
 
@@ -69,6 +87,21 @@ int main()
 	map.parse(cin);
 
 	auto treeCount = slideThrough(map, 3, 1);
+	cout << "(3, 1): We hit " << treeCount << " trees.\n";
 
-	cout << "We hit " << treeCount << " trees.\n";
+	auto slopes = array {
+		pair { 1u, 1u },
+		pair { 3u, 1u },
+		pair { 5u, 1u },
+		pair { 7u, 1u },
+		pair { 1u, 2u }
+	};
+
+	auto hitCounts = slopes | transform([&](auto slope) {
+		auto [dx, dy] = slope;
+		return slideThrough(map, dx, dy);
+	});
+	auto product = accumulate(begin(hitCounts), end(hitCounts), 1, multiplies{});	// no ranges::accumulate? :(
+
+	cout << "Tree hit product is " << product << ".\n";
 }
