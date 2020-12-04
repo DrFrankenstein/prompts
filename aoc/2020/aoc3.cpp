@@ -16,7 +16,6 @@
 using std::accumulate, std::array, std::begin, std::cin, std::cout, std::end, std::getline,
       std::istream, std::multiplies, std::pair, std::size_t, std::string, std::vector;
 
-
 #if __cpp_lib_ranges >= 201911L
 using std::views::transform;
 #else
@@ -58,7 +57,7 @@ public:
 	}
 
 private:
-	void addRow(string row)
+	void addRow(const string& row)
 	{
 		_data.push_back(row);
 	}
@@ -73,7 +72,7 @@ private:
 	vector<string> _data{};
 };
 
-unsigned slideThrough(const Map& map, int dx, int dy)
+unsigned slideThrough(const Map& map, size_t dx, size_t dy)
 {
 	unsigned treeCount = 0;
 	for (size_t y = 0, x = 0; y < map.height(); y += dy, x += dx)
@@ -88,10 +87,10 @@ int main()
 	Map map;
 	map.parse(cin);
 
-	auto treeCount = slideThrough(map, 3, 1);
+	const auto treeCount = slideThrough(map, 3, 1);
 	cout << "(3, 1): We hit " << treeCount << " trees.\n";
 
-	auto slopes = array {
+	constexpr auto slopes = array {
 		pair { 1u, 1u },
 		pair { 3u, 1u },
 		pair { 5u, 1u },
@@ -99,11 +98,11 @@ int main()
 		pair { 1u, 2u }
 	};
 
-	auto hitCounts = slopes | transform([&](auto slope) {
+	const auto hitCounts = slopes | transform([&](auto slope) {
 		auto [dx, dy] = slope;
 		return slideThrough(map, dx, dy);
 	});
-	auto product = accumulate(begin(hitCounts), end(hitCounts), 1, multiplies{});	// no ranges::accumulate? :(
+	const auto product = accumulate(begin(hitCounts), end(hitCounts), 1, multiplies{});	// no ranges::accumulate? :(
 
 	cout << "Tree hit product is " << product << ".\n";
 }
