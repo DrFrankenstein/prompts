@@ -68,6 +68,8 @@ private:
 		return x % width();
 	}
 
+	// exercise for the reader: use a uint32_t, bitset, or vector<bool>
+	// to store rows
 	vector<string> _data{};
 };
 
