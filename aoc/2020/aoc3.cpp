@@ -10,7 +10,7 @@
 #if __cpp_lib_ranges >= 201911L
 #include <ranges>
 #else
-#include "nanorange.hpp"
+#include <nanorange.hpp>
 #endif
 
 using std::accumulate, std::array, std::begin, std::cin, std::cout, std::end, std::getline,

@@ -7,7 +7,7 @@
 #if __cpp_lib_ranges >= 201911L
 #include <ranges>
 #else
-#include "nanorange.hpp"
+#include <nanorange.hpp>
 #endif
 
 using std::back_inserter, std::copy, std::cin, std::cout,
