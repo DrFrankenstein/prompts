@@ -42,13 +42,13 @@ namespace Parser
 		const string key { cbegin(ikey), cend(ikey) };
 
 		if (it == end)
-			throw runtime_error("missing value (no ':')");
+			throw runtime_error("parse error: missing value (no ':')");
 
 		const auto ivalue = *it++ | common;
 		const string value { cbegin(ivalue), cend(ivalue) };
 
 		if (it != end)
-			throw runtime_error("stray data in pair (extra ':')");
+			throw runtime_error("parse error: stray data in pair (extra ':')");
 
 		return pair { key, value };
 	}
