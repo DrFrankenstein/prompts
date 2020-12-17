@@ -99,7 +99,7 @@ namespace Validator
 {
 	inline auto validateYear(const string& year, unsigned min, unsigned max)
 	{
-		if (year.size() < 4)
+		if (year.size() != 4)
 			// must be 4 characters
 			return false;
 
