@@ -173,13 +173,20 @@ namespace Validator
 
 	inline auto validatePassport(const Passport& passport)
 	{
-		return validateField(passport, "byr", [](const string& year) { return validateYear(year, 1920, 2002); })
-			&& validateField(passport, "iyr", [](const string& year) { return validateYear(year, 2010, 2020); })
-			&& validateField(passport, "eyr", [](const string& year) { return validateYear(year, 2020, 2030); })
-			&& validateField(passport, "hgt", validateHeight)
-			&& validateField(passport, "hcl", validateHairColor)
-			&& validateField(passport, "ecl", validateEyeColor)
-			&& validateField(passport, "pid", validatePassportId);
+		constexpr auto validators = array {
+			pair { "byr", +[](const string& year) { return validateYear(year, 1920, 2002); }},
+			pair { "iyr", +[](const string& year) { return validateYear(year, 2010, 2020); }},
+			pair { "eyr", +[](const string& year) { return validateYear(year, 2020, 2030); }},
+			pair { "hgt", validateHeight },
+			pair { "hcl", validateHairColor },
+			pair { "ecl", validateEyeColor },
+			pair { "pid", validatePassportId }
+		};
+
+		return all_of(validators, [&](const auto& validator) {
+			const auto [key, validate] = validator;
+			return validateField(passport, key, validate);
+		});
 	}
 }
 
