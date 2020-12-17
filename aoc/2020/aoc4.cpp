@@ -1,9 +1,11 @@
 #include <array>
+#include <cctype>
 #include <exception>
 #include <iostream>
 #include <iterator>
-#include <map>
 #include <string>
+#include <string_view>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -13,18 +15,21 @@
 #include <nanorange.hpp>
 #endif
 
-using std::array, std::cin, std::cout, std::getline, std::inserter, std::istream,
-	std::runtime_error, std::string, std::pair, std::map, std::vector;
+// don't import std::isdigit and std::isxdigit here. even though <locale> isn't included, GNU's libstdc++ makes
+// those versions available and it results in unresolved overloads down the line when we pass them as arguments.
+// there's probably a more elegant fix, but heck it. try a PR and see if I like your solution.
+using std::array, std::cin, std::cout, std::getline, std::inserter, std::istream, std::pair, std::runtime_error,
+	std::stoul, std::size_t, std::string, std::string_view, std::unordered_map, std::vector;
 
 #if __cpp_lib_ranges >= 201911L
-using std::ranges::cbegin, std::ranges::cend, std::views::common, std::ranges::copy,
-	std::ranges::count_if, std::ranges::includes, std::views::split, std::views::transform;
+using std::ranges::all_of, std::ranges::cbegin, std::ranges::cend, std::views::common, std::ranges::copy,
+	std::ranges::count_if, std::ranges::find, std::views::split, std::views::transform;
 #else
-using nano::ranges::cbegin, nano::ranges::cend, nano::views::common, nano::ranges::copy,
-	nano::ranges::count_if, nano::ranges::includes, nano::views::split, nano::views::transform;
+using nano::ranges::all_of, nano::ranges::cbegin, nano::ranges::cend, nano::views::common, nano::ranges::copy,
+	nano::ranges::count_if, nano::ranges::find, nano::views::split, nano::views::transform;
 #endif
 
-using Passport = map<string, string>;
+using Passport = unordered_map<string, string>;
 
 namespace Parser
 {
@@ -63,9 +68,9 @@ namespace Parser
 		copy(items, it);
 	}
 
-	auto parsePassport(istream& input)
+	inline auto parsePassport(istream& input)
 	{
-		map<string, string> passport;
+		Passport passport;
 
 		string line;
 		while (getline(input, line))
@@ -79,7 +84,7 @@ namespace Parser
 		return passport;
 	}
 
-	auto parsePassports(istream& input)
+	inline auto parsePassports(istream& input)
 	{
 		vector<Passport> passports;
 
@@ -90,23 +95,98 @@ namespace Parser
 	}
 }
 
-inline auto validatePassport(const Passport& passport)
+namespace Validator
 {
-	constexpr auto expectedKeys = array{
-		// must be sorted
-		"byr", /*"cid",*/ "ecl", "eyr", "hcl", "hgt", "iyr", "pid"
-	};
+	inline auto validateYear(const string& year, unsigned min, unsigned max)
+	{
+		if (year.size() < 4)
+			// must be 4 characters
+			return false;
 
-	const auto keys = passport
-		| transform([](const auto& item) -> const string& { return item.first; });
+		size_t end;
+		const auto yearval = stoul(year, &end);
 
-	return includes(keys, expectedKeys);
+		if (end != year.size())
+			// must be all digits
+			return false;
+
+		// must be between [min, max]
+		return yearval >= min && yearval <= max;
+	}
+
+	inline auto validateHeight(const string& height)
+	{
+		size_t digitCount;
+		const auto heightval = stoul(height, &digitCount);
+
+		if (digitCount == 0)
+			// must start with a number
+			return false;
+
+		auto unit = string_view { height };
+		unit.remove_prefix(digitCount);
+		if (unit == "cm")
+			return heightval >= 150 && heightval <= 193;
+		else if (unit == "in")
+			return heightval >= 59 && heightval <= 76;
+
+		// invalid unit
+		return false;
+	}
+
+	inline auto validateHairColor(const string& hcl)
+	{
+		// must start with '#'
+		if (hcl.size() == 0 || hcl.front() != '#')
+			return false;
+
+		// must be 6 hex digits
+		auto hex = string_view { hcl };
+		hex.remove_prefix(1);
+		return hex.size() == 6 && all_of(hex, isxdigit);
+	}
+
+	inline auto validateEyeColor(const string& ecl)
+	{
+		constexpr auto colors = array {
+			"amb", "blu", "brn", "gry", "grn", "hzl", "oth"
+		};
+
+		return find(colors, ecl) != cend(colors);
+	}
+
+	inline auto validatePassportId(const string& pid)
+	{
+		return pid.size() == 9 && all_of(pid, isdigit);
+	}
+
+	template <typename Func>
+	inline auto validateField(const Passport& passport, const string& key, const Func& func)
+	{
+		const auto item = passport.find(key);
+		if (item == passport.end())
+			// field not found
+			return false;
+
+		return func(item->second);
+	}
+
+	inline auto validatePassport(const Passport& passport)
+	{
+		return validateField(passport, "byr", [](const string& year) { return validateYear(year, 1920, 2002); })
+			&& validateField(passport, "iyr", [](const string& year) { return validateYear(year, 2010, 2020); })
+			&& validateField(passport, "eyr", [](const string& year) { return validateYear(year, 2020, 2030); })
+			&& validateField(passport, "hgt", validateHeight)
+			&& validateField(passport, "hcl", validateHairColor)
+			&& validateField(passport, "ecl", validateEyeColor)
+			&& validateField(passport, "pid", validatePassportId);
+	}
 }
 
 int main()
 {
 	const auto passports = Parser::parsePassports(cin);
-	const auto validCount = count_if(passports, validatePassport);
+	const auto validCount = count_if(passports, Validator::validatePassport);
 
 	cout << "There are " << validCount << " valid passports.\n";
 }
