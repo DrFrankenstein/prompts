@@ -3,9 +3,9 @@
 #include <exception>
 #include <iostream>
 #include <iterator>
-#include <set>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #if __cpp_lib_ranges >= 201911L
 #include <ranges>
@@ -13,12 +13,14 @@
 #include <nanorange.hpp>
 #endif
 
-using std::bitset, std::cin, std::cout, std::istream_iterator, std::runtime_error, std::set, std::string;
+using std::bitset, std::cin, std::cout, std::istream_iterator, std::runtime_error, std::string, std::vector;
 
 #if __cpp_lib_ranges >= 201911L
-using std::ranges::cbegin, std::ranges::cend, std::ranges::copy, std::views::iota, std::ranges::max, std::ranges::mismatch, std::ranges::subrange, std::views::transform;
+using std::ranges::cbegin, std::ranges::cend, std::ranges::copy, std::views::iota, std::ranges::max,
+	std::ranges::mismatch, std::ranges::sort, std::ranges::subrange, std::views::transform;
 #else
-using nano::ranges::cbegin, nano::ranges::cend, nano::ranges::copy, nano::views::iota, nano::ranges::max, nano::ranges::mismatch, nano::ranges::subrange, nano::views::transform;
+using nano::ranges::cbegin, nano::ranges::cend, nano::ranges::copy, nano::views::iota, nano::ranges::max,
+	nano::ranges::mismatch, nano::ranges::sort, nano::ranges::subrange, nano::views::transform;
 #endif
 
 struct BoardingPass
@@ -49,8 +51,10 @@ auto main() -> int
 	const auto data = subrange { istream_iterator<string>{cin}, istream_iterator<string>{} };
 	const auto passes = data | transform([](const auto& data) { return BoardingPass { data }; });
 	const auto ids = passes | transform([](const auto& pass) { return pass.id; });
-	const auto idset = set(cbegin(ids), cend(ids));
+	auto idlist = vector(cbegin(ids), cend(ids));
 
-	cout << "Highest boarding pass ID is " << max(idset) << ".\n";
-	cout << "Your seat ID is " << findGap(idset) << ".\n";
+	cout << "Highest boarding pass ID is " << max(idlist) << ".\n";
+
+	sort(idlist);
+	cout << "Your seat ID is " << findGap(idlist) << ".\n";
 }
