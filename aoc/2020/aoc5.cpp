@@ -16,10 +16,10 @@
 using std::bitset, std::cin, std::cout, std::istream_iterator, std::runtime_error, std::string, std::vector;
 
 #if __cpp_lib_ranges >= 201911L
-using std::ranges::cbegin, std::ranges::cend, std::ranges::copy, std::views::iota, std::ranges::max,
+using std::ranges::cbegin, std::ranges::cend, std::views::iota, std::ranges::max,
 	std::ranges::mismatch, std::ranges::sort, std::ranges::subrange, std::views::transform;
 #else
-using nano::ranges::cbegin, nano::ranges::cend, nano::ranges::copy, nano::views::iota, nano::ranges::max,
+using nano::ranges::cbegin, nano::ranges::cend, nano::views::iota, nano::ranges::max,
 	nano::ranges::mismatch, nano::ranges::sort, nano::ranges::subrange, nano::views::transform;
 #endif
 
