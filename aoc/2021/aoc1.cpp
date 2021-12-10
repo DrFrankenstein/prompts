@@ -1,19 +1,33 @@
 #include <algorithm>
+#include <functional>
 #include <iostream>
 #include <iterator>
+#include <numeric>
 
-using std::cin, std::count_if, std::cout, std::istream_iterator;
+#include <boost/circular_buffer.hpp>
+
+using std::accumulate, std::cin, std::count_if, std::cout, std::istream_iterator, std::plus;
+using boost::circular_buffer;
 
 int main()
 {
-	int last;
-	cin >> last;
+	istream_iterator<int> input {cin}, end;
 
-	istream_iterator<int> depths {cin};
-	const auto count = count_if(depths, {}, [&last](const auto curr) {
-		bool deeper = curr > last;
-		last = curr;
-		return deeper;
+	// I find this whole solution kinda clunky and inelegant, but I'm tired of it
+	// so maybe I'll revisit it later...
+	circular_buffer<int> window {3};
+	window.push_back(*input++);
+	window.push_back(*input++);
+	window.push_back(*input++);
+
+	auto lastSum = accumulate(window.begin(), window.end(), 0, plus{});
+
+	const auto count = count_if(input, end, [&](const auto depth) {
+		window.push_back(depth);
+		const auto currSum = accumulate(window.begin(), window.end(), 0, plus{});
+		const auto increased = currSum > lastSum;
+		lastSum = currSum;
+		return increased;
 	});
 
 	cout << count << '\n';
