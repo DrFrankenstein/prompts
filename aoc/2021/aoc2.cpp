@@ -48,12 +48,13 @@ public:
 		{
 		case Direction::FORWARD:
 			xpos += command.distance;
+			depth += aim * command.distance;
 			break;
 		case Direction::UP:
-			depth -= command.distance;
+			aim -= command.distance;
 			break;
 		case Direction::DOWN:
-			depth += command.distance;
+			aim += command.distance;
 			break;
 		}
 	}
@@ -64,6 +65,7 @@ public:
 	}
 
 private:
+	int aim = 0;
 	int xpos = 0;
 	int depth = 0;
 };
