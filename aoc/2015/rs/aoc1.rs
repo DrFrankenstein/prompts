@@ -30,7 +30,8 @@ fn exec_instruction(
 	let new_floor = current_floor + match instruction {
 		'(' => 1,
 		')' => -1,
-		_ => panic!("invalid character in input")
+		'\r' | '\n' => 0, // ignore the final newline
+		_ => panic!("invalid character in input: {}", instruction)
 	};
 
 	match basement_time {
@@ -46,3 +47,28 @@ fn run_test(input: &str, expected: ElevatorState) {
 }
 #[test]
 fn test_zero_1() { run_test("(())", (0, None)); }
+#[test]
+fn test_zero_2() { run_test("()()", (0, None)); }
+#[test]
+fn test_three_1() { run_test("(((", (3, None)); }
+#[test]
+fn test_three_2() { run_test("(()(()(", (3, None)); }
+#[test]
+fn test_three_with_basement() { run_test("))(((((", (3, Some(1))); }
+#[test]
+fn test_minus_one_1() { run_test("())", (-1, Some(3))); }
+#[test]
+fn test_minus_one_2() { run_test("))(", (-1, Some(1))); }
+#[test]
+fn test_minus_three_1() { run_test(")))", (-3, Some(1))); }
+#[test]
+fn test_minus_three_2() { run_test(")())())", (-3, Some(1))); }
+#[test]
+fn test_basement_1() { run_test(")", (-1, Some(1))); }
+#[test]
+fn test_basement_2() { run_test("()())", (-1, Some(5))); }
+#[test]
+#[should_panic]
+fn test_illegal() { run_elevator("a".bytes()); }
+#[test]
+fn test_newline() { run_test("\r\n", (0, None)); }
