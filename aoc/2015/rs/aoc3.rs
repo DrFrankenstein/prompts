@@ -1,4 +1,4 @@
-use std::{collections::HashSet, io::{self, Read}};
+use std::{collections::HashSet, io::{self, Read}, mem::swap};
 
 type Location = (i32, i32);
 
@@ -14,13 +14,16 @@ fn main() {
 
 fn visit_houses(commands: impl Iterator<Item = char>) -> usize {
     let mut house_map = HashSet::new();
-    let mut location: Location = (0, 0);
+    let mut curr_loc: Location = (0, 0);
+    let mut next_loc: Location = (0, 0);
 
-    house_map.insert(location);
+    house_map.insert(curr_loc);
 
     for command in commands {
-        location = move_to(location, command);
-        house_map.insert(location);
+        curr_loc = move_to(curr_loc, command);
+        house_map.insert(curr_loc);
+
+        swap(&mut curr_loc, &mut next_loc);
     }
 
     house_map.len()
@@ -39,6 +42,9 @@ fn move_to(from: Location, command: char) -> Location {
     }
 }
 
+// The tests below were designed for the first part of the problem and might no
+// longer hold true with the second set of constraints. To test with only the
+// initial problem, remove the call to 'swap' above.
 #[cfg(test)]
 fn run_test(input: &str, expected: usize) {
     let result = visit_houses(input.chars());
