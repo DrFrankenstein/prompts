@@ -8,9 +8,9 @@
 #include <vector>
 
 using std::abs, std::views::cartesian_product, std::cin, std::cout,
-	std::ranges::fold_left, std::istream, std::move, std::pair, std::plus,
-	std::ranges::sort, std::views::transform, std::vector,
-	std::views::zip_transform, std::tuple;
+	std::views::filter, std::ranges::fold_left, std::istream, std::move,
+	std::pair, std::plus, std::ranges::sort, std::vector,
+	std::views::zip_transform, std::tuple, std::views::values;
 
 template <typename T>
 static auto readLists(istream& input)
@@ -40,10 +40,11 @@ static auto totalDistance(vector<int>& leftList, vector<int>& rightList)
 static auto similarityScore(vector<int>& leftList, vector<int>& rightList)
 {
 	auto matches = cartesian_product(leftList, rightList)
-		| transform([](tuple<int, int> values) {
-			auto [left, right] = values;
-			return left == right ? left : 0;
-		});
+		| filter([](tuple<int, int> items) {
+			auto [left, right] = items;
+			return left == right;
+		})
+		| values;
 
 	return fold_left(matches, 0, plus<int>{});
 }
