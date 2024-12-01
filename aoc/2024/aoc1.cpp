@@ -19,7 +19,7 @@ static auto readLists(istream& input)
 	while (input)
 	{
 		T left, right;
-		cin >> left >> right;
+		input >> left >> right;
 
 		if (!input) break;
 
