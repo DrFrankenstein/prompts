@@ -11,7 +11,7 @@ using std::abs, std::cin, std::cout, std::ranges::fold_left, std::istream,
 	std::views::zip_transform;
 
 template <typename T>
-static auto readLists(istream& input) -> pair<vector<T>, vector<T>>
+static auto readLists(istream& input)
 {
 	vector<T> leftList, rightList;
 	while (input)
@@ -28,16 +28,18 @@ static auto readLists(istream& input) -> pair<vector<T>, vector<T>>
 	return pair{ move(leftList), move(rightList) };
 }
 
+static auto totalDistance(vector<int>& leftList, vector<int>& rightList)
+{
+	auto const distance = [](int left, int right) { return abs(left - right); };
+	auto const distances = zip_transform(distance, leftList, rightList);
+	return fold_left(distances, 0, plus<int>{});
+}
+
 int main()
 {
 	auto [leftList, rightList] = readLists<int>(cin);
 	sort(leftList);
 	sort(rightList);
 
-	auto const distance = [](int left, int right) { return abs(left - right); };
-
-	auto const distances = zip_transform(distance, leftList, rightList);
-	auto const sum = fold_left(distances, 0, plus<int>{});
-
-	cout << sum;
+	cout << totalDistance(leftList, rightList);
 }
